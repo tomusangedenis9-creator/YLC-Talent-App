@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Talent - Sign Up</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        
+        /* Premium radial gradient background */
+        .auth-container {
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            background-image: radial-gradient(ellipse 120% 40% at top center, rgba(139, 92, 246, 0.25) 0%, transparent 100%);
+            background-repeat: no-repeat;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .auth-logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .auth-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .auth-header p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .auth-form-group {
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .auth-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        .auth-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .auth-input-wrapper:hover .auth-input, 
+        .auth-input-wrapper:hover .auth-select {
+            border-color: #cbd5e1;
+        }
+        .auth-input-wrapper .material-symbols-outlined {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            font-size: 1.25rem;
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        /* Unified premium styling for inputs and selects */
+        .auth-input, .auth-select {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: #334155;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+            -webkit-appearance: none; /* Removes default iOS/Android styling */
+            appearance: none;
+        }
+        
+        .auth-input:focus, .auth-select:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+
+        /* Upgraded Select UI */
+        .auth-select {
+            cursor: pointer;
+            padding-right: 40px; /* Make room for the arrow */
+        }
+        .auth-select:invalid {
+            color: #94a3b8; /* Faded color for the placeholder option */
+        }
+        .auth-select option {
+            color: #334155;
+            background: white;
+            padding: 10px;
+        }
+        .select-arrow {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8b5cf6 !important; /* Make the arrow pop with brand color */
+            pointer-events: none;
+            transition: transform 0.3s ease;
+        }
+        .auth-select:focus + .select-arrow {
+            transform: translateY(-50%) rotate(180deg); /* Flips arrow when opened */
+        }
+
+        .auth-btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+            margin-top: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .auth-btn-primary:hover {
+            box-shadow: 0 6px 16px rgba(139, 92, 246, 0.35);
+        }
+        .auth-btn-primary:active {
+            transform: scale(0.98);
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .auth-link {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo-area">
+                <span class="logo-circle-gradient" style="width: 28px; height: 28px; background: linear-gradient(135deg, #8b5cf6, #6366f1); border-radius: 50%;"></span>
+                <span class="logo-text-title" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">YLC <span style="color: #8b5cf6;">Talent</span></span>
+            </div>
+            <h2>Create Account</h2>
+            <p>Join the student dashboard today</p>
+        </div>
+
+        <form id="signupForm">
+            <div class="auth-form-group">
+                <label for="fullname">Full Name</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">person</span>
+                    <input type="text" id="fullname" class="auth-input" placeholder="Enter your name" required>
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="email">Email Address</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">mail</span>
+                    <input type="email" id="email" class="auth-input" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="track">Learning Track</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">school</span>
+                    <select id="track" class="auth-select" required>
+                        <option value="" disabled selected hidden>Select your track...</option>
+                        <option value="creative-arts">Creative Arts</option>
+                        <option value="digital-skills">Digital Skills</option>
+                        <option value="leadership">Leadership</option>
+                        <option value="entrepreneurship">Entrepreneurship</option>
+                    </select>
+                    <span class="material-symbols-outlined select-arrow">expand_more</span>
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="password">Create Password</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">lock</span>
+                    <input type="password" id="password" class="auth-input" placeholder="••••••••" required minlength="6">
+                </div>
+            </div>
+
+            <button type="submit" class="auth-btn-primary">Sign Up</button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="index.html" class="auth-link">Sign In</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('signupForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const track = document.getElementById('track').value;
+            const password = document.getElementById('password').value;
+            
+            const submitBtn = document.querySelector('.auth-btn-primary');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Creating Account...";
+
+            try {
+                // Step A: Create the account
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Step B: Save directly to Firestore using exact field names needed for your Admin Dashboard
+                await setDoc(doc(db, "students", user.uid), {
+                    name: fullname,        // Changed to 'name' to match your DB structure
+                    email: email,
+                    track: track,          // Changed to 'track' so the admin live counters work
+                    role: "student",       // Automatically makes them a student
+                    joinedAt: new Date()
+                });
+
+                // Step C: Success redirect
+                window.location.href = 'student-dashboard.html';
+
+            } catch (error) {
+                console.error(error);
+                alert("Sign Up Failed: " + error.message);
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+</body>
+</html>

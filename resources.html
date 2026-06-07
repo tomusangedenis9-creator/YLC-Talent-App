@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Resources</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Mini Avatar Style to match your Dashboard */
+        .mini-avatar-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            background: #f1f5f9; color: #475569;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 0.85rem; border: 1px solid #e2e8f0; cursor: pointer;
+        }
+    </style>
+</head>
+<body class="premium-dashboard-body">
+
+    <header class="app-header">
+        <div class="header-left">
+            <button class="menu-burger-btn">
+                <span class="material-symbols-outlined">menu</span>
+            </button>
+            <div class="app-logo-area">
+                <span class="logo-circle-gradient"></span>
+                <span class="logo-text-title">YLC <span class="logo-accent">Talent</span></span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="notification-bell-box" onclick="window.location.href='notifications.html'">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">notifications</span>
+                <span class="bell-badge-count">3</span>
+            </div>
+            <div id="topNavAvatarBox" class="mini-avatar-circle" onclick="window.location.href='student-profile.html'">ST</div>
+        </div>
+    </header>
+
+    <main class="mobile-scroll-container">
+        
+        <div class="page-title-header">
+            <h2>Track Resources</h2>
+            <p id="pageTrackSubtitle">Loading your materials...</p>
+        </div>
+
+        <div class="resource-controls">
+            <div class="search-box">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" id="searchInput" placeholder="Search lessons, videos, PDFs...">
+            </div>
+            
+            <div class="filter-chips-container">
+                <button class="filter-chip active-chip" data-filter="all">All</button>
+                <button class="filter-chip" data-filter="video">🎥 Videos</button>
+                <button class="filter-chip" data-filter="pdf">📄 PDFs</button>
+                <button class="filter-chip" data-filter="template">📝 Templates</button>
+            </div>
+        </div>
+
+        <div class="workspace-section-header">
+            <h3>Module Materials</h3>
+        </div>
+        
+        <div class="resource-list-container" id="resourceContainer">
+            <p style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 40px 0;">
+                Loading live resources...
+            </p>
+        </div>
+
+        <div style="height: 90px;"></div> 
+    </main>
+
+    <nav class="bottom-navigation-tray">
+        <button class="nav-tray-item" onclick="window.location.href='student-dashboard.html'">
+            <span class="material-symbols-outlined tray-icon">home</span>
+            <span class="tray-label">Home</span>
+        </button>
+        <button class="nav-tray-item active-tray">
+            <span class="material-symbols-outlined tray-icon">menu_book</span>
+            <span class="tray-label">Resources</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='community.html'">
+            <span class="material-symbols-outlined tray-icon">group</span>
+            <span class="tray-label">Community</span>
+        </button>
+        <button class="nav-tray-item" id="trayProfileBtn" onclick="window.location.href='profile.html'">
+            <span class="material-symbols-outlined tray-icon">person</span>
+            <span class="tray-label">Profile</span>
+        </button>
+    </nav>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const searchInput = document.getElementById('searchInput');
+            const filterChips = document.querySelectorAll('.filter-chip');
+
+            // LIVE FILTER CHIPS LOGIC
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    filterChips.forEach(c => c.classList.remove('active-chip'));
+                    this.classList.add('active-chip');
+                    filterAndSearchResources();
+                });
+            });
+
+            // INSTANT SEARCH LOGIC
+            searchInput.addEventListener('input', function() {
+                filterAndSearchResources();
+            });
+        });
+
+        // Global function so we can call it when the user types/clicks
+        // It fetches the DOM elements live so it works with Firebase injected data
+        window.filterAndSearchResources = function() {
+            const activeChip = document.querySelector('.filter-chip.active-chip');
+            const selectedFilter = activeChip ? activeChip.getAttribute('data-filter') : 'all';
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resourceCards = document.querySelectorAll('.resource-list-card');
+
+            resourceCards.forEach(card => {
+                const cardCategory = card.getAttribute('data-category');
+                const cardTitle = card.querySelector('h4').innerText.toLowerCase();
+
+                const matchesFilter = (selectedFilter === 'all' || selectedFilter === cardCategory);
+                const matchesSearch = cardTitle.includes(searchQuery);
+
+                if (matchesFilter && matchesSearch) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        };
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        const resourceContainer = document.getElementById('resourceContainer');
+
+        // Helper to format track display names
+        function formatTrackName(trackKey) {
+            if(!trackKey) return "General Track";
+            return trackKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + " Track";
+        }
+
+        function computeInitials(name) {
+            if(!name) return "ST";
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        // 1. Authenticate user and get their track
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const studentDocRef = doc(db, "students", user.uid);
+                    const docSnap = await getDoc(studentDocRef);
+                    
+                    if (docSnap.exists()) {
+                        const studentData = docSnap.data();
+                        const fullName = studentData.fullName || "Student User";
+                        const userTrackKey = studentData.learningTrack || "creative-arts";
+                        
+                        // Update UI Texts
+                        document.getElementById('topNavAvatarBox').textContent = computeInitials(fullName);
+                        document.getElementById('pageTrackSubtitle').textContent = formatTrackName(userTrackKey) + " Materials";
+
+                        // Initialize the real-time resource listener for this track
+                        loadLiveResources(userTrackKey);
+                    }
+                } catch (error) {
+                    console.error("Profile error:", error);
+                }
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // REAL-TIME FIREBASE RESOURCES ENGINE
+        function loadLiveResources(trackKey) {
+            const resourceQuery = query(
+                collection(db, "track_resources"), 
+                where("track", "==", trackKey),
+                orderBy("timestamp", "desc")
+            );
+
+            onSnapshot(resourceQuery, (snapshot) => {
+                resourceContainer.innerHTML = ""; 
+
+                if (snapshot.empty) {
+                    resourceContainer.innerHTML = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; text-align: center; color: #94a3b8;">
+                            <p style="font-size: 0.85rem;">No resources uploaded yet. Check back soon!</p>
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const res = doc.data();
+                    
+                    let iconName = "description";
+                    let iconGradient = "gradient-orange"; 
+                    let clickAction = `window.open('${res.linkUrl || '#'}', '_blank')`;
+                    let actionIcon = "open_in_new";
+
+                    if (res.category === "pdf") {
+                        iconName = "picture_as_pdf";
+                        iconGradient = "gradient-blue";
+                        actionIcon = "download";
+                    } else if (res.category === "video") {
+                        iconName = "movie";
+                        iconGradient = "gradient-dark";
+                        clickAction = "window.location.href='video-player.html'"; // Or pass the URL to your player
+                        actionIcon = "play_arrow";
+                    }
+
+                    const resourceCard = document.createElement('div');
+                    resourceCard.className = "resource-list-card";
+                    resourceCard.setAttribute("data-category", res.category || "template");
+                    resourceCard.style.cursor = "pointer";
+                    resourceCard.setAttribute("onclick", clickAction);
+                    
+                    resourceCard.innerHTML = `
+                        <div class="resource-icon-box ${iconGradient}">
+                            <span class="material-symbols-outlined">${iconName}</span>
+                        </div>
+                        <div class="resource-text-info">
+                            <h4>${res.title}</h4>
+                            <p>${res.subtitle || 'Track Material'}</p>
+                        </div>
+                        <button class="resource-action-btn">
+                            <span class="material-symbols-outlined">${actionIcon}</span>
+                        </button>
+                    `;
+                    
+                    resourceContainer.appendChild(resourceCard);
+                });
+
+                if(typeof window.filterAndSearchResources === 'function') {
+                    window.filterAndSearchResources();
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Talent - Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+        /* Premium radial gradient dropping down from the top */
+        .auth-container {
+            padding: 30px 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f8fafc;
+            background-image: radial-gradient(ellipse 120% 40% at top center, rgba(139, 92, 246, 0.25) 0%, transparent 100%);
+            background-repeat: no-repeat;
+        }
+        .auth-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .auth-logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .auth-header h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .auth-header p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        .auth-form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .auth-form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            margin-bottom: 8px;
+        }
+        .auth-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .auth-input-wrapper .material-symbols-outlined {
+            position: absolute;
+            left: 14px;
+            color: #94a3b8;
+            font-size: 1.25rem;
+            pointer-events: none;
+        }
+        .auth-input {
+            width: 100%;
+            padding: 14px 14px 14px 44px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: #334155;
+            background: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        .auth-input:focus {
+            border-color: #8b5cf6;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+        }
+        .auth-btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
+            margin-top: 10px;
+            transition: transform 0.2s ease;
+        }
+        .auth-btn-primary:active {
+            transform: scale(0.98);
+        }
+        .auth-footer {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .auth-link {
+            color: #8b5cf6;
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo-area">
+                <span class="logo-circle-gradient" style="width: 28px; height: 28px; background: linear-gradient(135deg, #8b5cf6, #6366f1); border-radius: 50%;"></span>
+                <span class="logo-text-title" style="font-size: 1.5rem; font-weight: 700; color: #1e293b;">YLC <span style="color: #8b5cf6;">Talent</span></span>
+            </div>
+            <h2>Welcome Back!</h2>
+            <p>Sign in to continue your learning journey</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="auth-form-group">
+                <label for="email">Email Address</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">mail</span>
+                    <input type="email" id="email" class="auth-input" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="auth-form-group">
+                <label for="password">Password</label>
+                <div class="auth-input-wrapper">
+                    <span class="material-symbols-outlined">lock</span>
+                    <input type="password" id="password" class="auth-input" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-btn-primary">Sign In</button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="signup.html" class="auth-link">Sign Up</a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault(); 
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            const submitBtn = document.querySelector('.auth-btn-primary');
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = "Verifying...";
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                const userDocRef = doc(db, "students", user.uid);
+                const userDocSnap = await getDoc(userDocRef);
+
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    
+                    if (userData.role && String(userData.role).trim().toLowerCase() === "admin") {
+                        window.location.href = "admin-dashboard.html";
+                    } else {
+                        window.location.href = "student-dashboard.html";
+                    }
+                } else {
+                    window.location.href = "student-dashboard.html";
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("Login Failed: Please check your email and password.");
+                submitBtn.textContent = originalText;
+            }
+        });
+    </script>
+
+</body>
+</html>
+
+

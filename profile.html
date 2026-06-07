@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Edit Profile</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="premium-dashboard-body">
+
+    <header class="app-header">
+        <div class="header-left">
+            <button class="menu-burger-btn" onclick="window.location.href='student-dashboard.html'">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="app-logo-area">
+                <span class="logo-text-title">Edit <span class="logo-accent">Profile</span></span>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="btn-text-link" id="saveProfileBtn" style="font-size: 1rem;">Save</button>
+        </div>
+    </header>
+
+    <main class="mobile-scroll-container">
+        
+        <div class="profile-edit-header">
+            <div class="profile-avatar-wrapper">
+                <img id="editUserAvatar" src="https://ui-avatars.com/api/?name=User&background=f1f5f9&color=64748b" alt="Avatar">
+                
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                
+                <button class="change-avatar-btn" id="avatarUploadBtn" onclick="document.getElementById('fileInput').click()">
+                    <span class="material-symbols-outlined">photo_camera</span>
+                </button>
+            </div>
+            <h3 class="dynamic-name" id="pDisplayName" style="margin-top: 15px; font-size: 1.4rem;">Loading...</h3>
+            <p class="cohort-indicator-sub" id="pTrackDisplay" style="color: #64748b;">Loading Track...</p>
+        </div>
+
+        <div class="dashboard-card profile-form-card">
+            
+            <div class="profile-input-group">
+                <label>Full Name</label>
+                <input type="text" id="pFullName" placeholder="Enter your full name">
+            </div>
+
+            <div class="profile-input-group">
+                <label>Email Address (Read Only)</label>
+                <input type="email" id="pEmail" disabled class="input-disabled">
+            </div>
+
+            <div class="profile-input-group">
+                <label>Phone Number</label>
+                <input type="tel" id="pPhone" placeholder="+256 700 000000">
+            </div>
+
+            <div class="profile-input-group">
+                <label>Assigned Track (Read Only)</label>
+                <input type="text" id="pTrackInput" disabled class="input-disabled">
+            </div>
+
+            <div class="profile-input-group">
+                <label>Short Bio</label>
+                <textarea id="pBio" rows="3" placeholder="Tell the community a bit about yourself..."></textarea>
+            </div>
+
+        </div>
+
+        <button class="btn-logout-full" id="logoutBtn">
+            <span class="material-symbols-outlined">logout</span>
+            Sign Out
+        </button>
+
+        <div style="height: 90px;"></div>
+    </main>
+
+        <nav class="bottom-navigation-tray">
+        <button class="nav-tray-item" onclick="window.location.href='student-dashboard.html'">
+            <span class="material-symbols-outlined tray-icon">home</span>
+            <span class="tray-label">Home</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='resources.html'">
+            <span class="material-symbols-outlined tray-icon">menu_book</span>
+            <span class="tray-label">Resources</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='community.html'">
+            <span class="material-symbols-outlined tray-icon">group</span>
+            <span class="tray-label">Community</span>
+        </button>
+        <button class="nav-tray-item active-tray" onclick="window.location.href='profile.html'">
+            <span class="material-symbols-outlined tray-icon">person</span>
+            <span class="tray-label">Profile</span>
+        </button>
+    </nav>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI Elements
+        const fileInput = document.getElementById('fileInput');
+        const avatarImg = document.getElementById('editUserAvatar');
+        const uploadBtn = document.getElementById('avatarUploadBtn');
+        const saveBtn = document.getElementById('saveProfileBtn');
+        const displayName = document.getElementById('pDisplayName');
+        const trackDisplay = document.getElementById('pTrackDisplay');
+        const fullNameInput = document.getElementById('pFullName');
+        const emailInput = document.getElementById('pEmail');
+        const phoneInput = document.getElementById('pPhone');
+        const trackInput = document.getElementById('pTrackInput');
+        const bioInput = document.getElementById('pBio');
+
+        let currentUserDocRef = null;
+        let currentImageBase64 = null;
+
+        // 1. LISTEN FOR LOGGED IN USER & FETCH DATA
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Set Email from Auth
+                emailInput.value = user.email;
+                
+                // Get remaining data from Firestore
+                currentUserDocRef = doc(db, "students", user.uid);
+                try {
+                    const docSnap = await getDoc(currentUserDocRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        
+                        // Populate Fields
+                        fullNameInput.value = data.fullName || "";
+                        displayName.innerText = data.fullName || "Student";
+                        phoneInput.value = data.phone || "";
+                        bioInput.value = data.bio || "";
+                        
+                        // Handle Tracks elegantly
+                        const track = data.learningTrack || "Not Assigned";
+                        trackInput.value = track;
+                        trackDisplay.innerText = track;
+
+                        // Handle Avatar
+                        if (data.avatarUrl) {
+                            avatarImg.src = data.avatarUrl;
+                        } else {
+                            avatarImg.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'User')}&background=f1f5f9&color=64748b`;
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error fetching profile:", error);
+                }
+            } else {
+                // If no one is logged in, kick them back to login page
+                window.location.href = "index.html";
+            }
+        });
+
+        // 2. IMAGE SELECTION & PREVIEW (Saves as Base64 string for Firestore)
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                uploadBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span>';
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentImageBase64 = event.target.result;
+                    avatarImg.src = currentImageBase64;
+                    
+                    uploadBtn.innerHTML = '<span class="material-symbols-outlined">check</span>';
+                    setTimeout(() => {
+                        uploadBtn.innerHTML = '<span class="material-symbols-outlined">photo_camera</span>';
+                    }, 1500);
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 3. SAVE TO FIREBASE
+        saveBtn.addEventListener('click', async function() {
+            if (!currentUserDocRef) return;
+            
+            saveBtn.innerText = "Saving...";
+            
+            const updatedData = {
+                fullName: fullNameInput.value.trim(),
+                phone: phoneInput.value.trim(),
+                bio: bioInput.value.trim()
+            };
+
+            // Only update the image if they selected a new one
+            if (currentImageBase64) {
+                updatedData.avatarUrl = currentImageBase64;
+            }
+
+            try {
+                await updateDoc(currentUserDocRef, updatedData);
+                
+                displayName.innerText = fullNameInput.value;
+                saveBtn.innerText = "Saved!";
+                saveBtn.style.color = "#059669"; 
+                
+                setTimeout(() => {
+                    saveBtn.innerText = "Save";
+                    saveBtn.style.color = ""; 
+                }, 2000);
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                alert("Failed to save profile. Try again.");
+                saveBtn.innerText = "Save";
+            }
+        });
+
+        // 4. SIGN OUT
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            if(confirm("Are you sure you want to sign out?")) {
+                signOut(auth).then(() => {
+                    window.location.href = 'index.html'; 
+                }).catch((error) => {
+                    console.error("Sign out error", error);
+                });
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .video-container {
+            width: 100%;
+            background-color: #000;
+            aspect-ratio: 16 / 9; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        video {
+            width: 100%;
+            height: 100%;
+            outline: none;
+        }
+
+        .rotate-badge {
+            position: absolute; bottom: 16px; right: 16px; background: rgba(0, 0, 0, 0.7);
+            color: white; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem;
+            font-weight: 600; display: flex; align-items: center; gap: 6px; cursor: pointer;
+            border: 1px solid rgba(255,255,255,0.2); z-index: 10; backdrop-filter: blur(5px);
+        }
+
+        .video-details-card {
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .video-meta {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .video-description {
+            font-size: 0.95rem;
+            color: #475569;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+
+        .btn-primary-full {
+            width: 100%;
+            padding: 14px;
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+
+        .btn-primary-full:active {
+            background: #7c3aed;
+        }
+
+        /* Loading Skeletons */
+        .skeleton-text { background: #e2e8f0; border-radius: 4px; height: 20px; margin-bottom: 8px; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+    </style>
+</head>
+<body class="premium-dashboard-body">
+
+    <header class="app-header">
+        <div class="header-left">
+            <button class="menu-burger-btn" onclick="history.back()">
+                <span class="material-symbols-outlined">arrow_back</span>
+            </button>
+            <div class="app-logo-area">
+                <span class="logo-text-title">Now <span class="logo-accent">Playing</span></span>
+            </div>
+        </div>
+    </header>
+
+    <main class="mobile-scroll-container" style="padding: 0;">
+        
+        <div class="video-container" id="mediaContainer">
+            <div style="width:100%; height:100%; background:#cbd5e1; display:flex; align-items:center; justify-content:center;">
+                <span class="material-symbols-outlined" style="color:#fff; font-size: 3rem;">hourglass_empty</span>
+            </div>
+        </div>
+
+        <div class="video-details-card">
+            <span id="trackBadge" style="background: #fef3c7; color: #d97706; padding: 4px 8px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; margin-bottom: 10px; display: inline-block;">LOADING...</span>
+            
+            <h1 class="video-title" id="videoTitle"><div class="skeleton-text" style="width: 80%;"></div></h1>
+            
+            <div class="video-meta" id="videoMeta">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">schedule</span>
+                Loading details...
+            </div>
+
+            <p class="video-description" id="videoDesc">
+                <div class="skeleton-text" style="width: 100%;"></div>
+                <div class="skeleton-text" style="width: 60%;"></div>
+            </p>
+
+            <button class="btn-primary-full" id="markCompleteBtn">
+                <span class="material-symbols-outlined">check_circle</span>
+                Mark as Completed
+            </button>
+        </div>
+
+        <div style="height: 90px;"></div>
+    </main>
+
+    <nav class="bottom-navigation-tray">
+        <button class="nav-tray-item" onclick="window.location.href='student-dashboard.html'">
+            <span class="material-symbols-outlined tray-icon">home</span>
+            <span class="tray-label">Home</span>
+        </button>
+        <button class="nav-tray-item active-tray" onclick="window.location.href='resources.html'">
+            <span class="material-symbols-outlined tray-icon">menu_book</span>
+            <span class="tray-label">Resources</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='community.html'">
+            <span class="material-symbols-outlined tray-icon">group</span>
+            <span class="tray-label">Community</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='student-profile.html'">
+            <span class="material-symbols-outlined tray-icon">person</span>
+            <span class="tray-label">Profile</span>
+        </button>
+    </nav>
+
+    <script>
+        const completeBtn = document.getElementById('markCompleteBtn');
+        completeBtn.addEventListener('click', function() {
+            this.innerHTML = '<span class="material-symbols-outlined">verified</span> Completed!';
+            this.style.background = '#059669'; 
+            // Future feature: Save completion status to Firebase here
+        });
+
+        function enterFullscreenAndRotate() {
+            const videoElement = document.getElementById('mainVideoPlayer');
+            if (!videoElement) return;
+
+            if (videoElement.requestFullscreen) {
+                videoElement.requestFullscreen();
+            } else if (videoElement.webkitRequestFullscreen) { /* iOS Safari */
+                videoElement.webkitRequestFullscreen();
+            }
+
+            // Lock orientation to landscape if supported by the mobile browser
+            if (screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(err => console.log("Orientation lock not supported", err));
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Get resource ID from the URL (e.g., video-player.html?id=xyz123)
+        const urlParams = new URLSearchParams(window.location.search);
+        const resourceId = urlParams.get('id');
+
+        async function loadVideoDetails() {
+            if (!resourceId) {
+                document.getElementById('videoTitle').innerText = "Video Not Found";
+                document.getElementById('videoDesc').innerText = "Please go back to the resources page and select a valid video.";
+                document.getElementById('trackBadge').style.display = 'none';
+                return;
+            }
+
+            try {
+                const docRef = doc(db, "track_resources", resourceId);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    
+                    // Format Track Name
+                    let trackName = data.track ? data.track.replace('-', ' ') : 'General';
+                    trackName = trackName.toUpperCase() + " TRACK";
+
+                    // Populate UI
+                    document.getElementById('trackBadge').innerText = trackName;
+                    document.getElementById('videoTitle').innerText = data.title;
+                    document.getElementById('videoDesc').innerText = data.subtitle || "No description provided for this lesson.";
+                    document.getElementById('videoMeta').innerHTML = `
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">play_circle</span>
+                        Video Lesson
+                    `;
+
+                    // Inject Video Player
+                    const mediaContainer = document.getElementById('mediaContainer');
+                    mediaContainer.innerHTML = `
+                        <video id="mainVideoPlayer" src="${data.linkUrl}" controls controlsList="nodownload"></video>
+                        <button class="rotate-badge" onclick="enterFullscreenAndRotate()">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">screen_rotation</span> Rotate
+                        </button>
+                    `;
+                } else {
+                    document.getElementById('videoTitle').innerText = "Video Removed";
+                    document.getElementById('videoDesc').innerText = "This content is no longer available.";
+                }
+            } catch (error) {
+                console.error("Error fetching video:", error);
+                document.getElementById('videoTitle').innerText = "Error Loading Data";
+            }
+        }
+
+        loadVideoDetails();
+    </script>
+</body>
+</html>

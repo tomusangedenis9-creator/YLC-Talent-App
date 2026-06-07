@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Talent Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; font-family: 'Poppins', sans-serif; }
+        
+        body.premium-dashboard-body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding-top: 70px; 
+            padding-bottom: 90px; 
+        }
+
+        /* --- APP HEADER --- */
+        .app-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 20px; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            z-index: 900;
+        }
+        .header-left, .header-right { display: flex; align-items: center; gap: 12px; }
+        .menu-burger-btn { background: none; border: none; font-size: 1.5rem; color: #1e293b; cursor: pointer; }
+        .app-logo-area { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1.2rem; }
+        .logo-circle-gradient { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #6366f1); }
+        .logo-accent { color: #8b5cf6; }
+        .notification-bell-box { position: relative; }
+        .bell-badge-count { position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; font-size: 0.6rem; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* --- SIDE MENU DRAWER STYLES --- */
+        .side-drawer-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); opacity: 0; pointer-events: none;
+            transition: opacity 0.3s ease; z-index: 999;
+        }
+        .side-drawer-overlay.active { opacity: 1; pointer-events: auto; }
+        .side-drawer {
+            position: fixed; top: 0; left: -280px; width: 280px; height: 100%;
+            background: #ffffff; box-shadow: 5px 0 25px rgba(0,0,0,0.1);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000;
+            display: flex; flex-direction: column; padding: 24px 16px;
+        }
+        .side-drawer.active { left: 0; }
+        .drawer-header { display: flex; align-items: center; gap: 12px; padding-bottom: 20px; border-bottom: 1px solid #f1f5f9; margin-bottom: 20px; }
+        
+        .drawer-avatar-circle, .mini-avatar-circle, .hero-avatar-circle {
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; background-size: cover; background-position: center;
+        }
+        .drawer-avatar-circle { width: 48px; height: 48px; border-radius: 50%; background-color: #f3e8ff; color: #7c3aed; font-weight: 700; font-size: 1.1rem; border: 2px solid #7c3aed; }
+        .mini-avatar-circle { width: 36px; height: 36px; border-radius: 50%; background-color: #f1f5f9; color: #475569; font-weight: 600; font-size: 0.85rem; border: 1px solid #e2e8f0; cursor: pointer; }
+        .hero-avatar-circle { width: 80px; height: 80px; border-radius: 50%; background-color: #ffffff; color: #7c3aed; font-weight: 700; font-size: 1.8rem; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        .drawer-user-info h4 { margin: 0; font-size: 0.95rem; font-weight: 600; color: #1e293b; }
+        .drawer-user-info p { margin: 0; font-size: 0.75rem; color: #64748b; text-transform: capitalize; }
+        .drawer-menu-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .drawer-item { display: flex; align-items: center; gap: 14px; padding: 12px; border-radius: 12px; color: #475569; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; text-decoration: none;}
+        .drawer-item:active, .drawer-item.active { background: #f3e8ff; color: #7c3aed; }
+        .drawer-item .material-symbols-outlined { font-size: 1.3rem; }
+        .drawer-footer { margin-top: auto; font-size: 0.75rem; color: #94a3b8; text-align: center; }
+
+        /* --- BOTTOM NAVIGATION TRAY --- */
+        .bottom-navigation-tray {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #ffffff; border-top: 1px solid #e2e8f0;
+            display: flex; justify-content: space-around; align-items: center;
+            padding: 12px 10px 20px 10px; z-index: 900;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.03);
+        }
+        .nav-tray-item {
+            background: none; border: none; display: flex; flex-direction: column;
+            align-items: center; gap: 4px; color: #94a3b8; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-tray-item .tray-icon { font-size: 1.5rem; }
+        .nav-tray-item .tray-label { font-size: 0.7rem; font-weight: 500; }
+        .nav-tray-item.active-tray { color: #8b5cf6; }
+
+        /* --- MAIN CONTENT & CARDS --- */
+        .mobile-scroll-container { padding: 16px; }
+        .dashboard-card { background: #ffffff; border-radius: 20px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); border: 1px solid #f1f5f9; }
+        .premium-hero-card { background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); color: white; border: none; }
+        .hero-inner-split { display: flex; justify-content: space-between; align-items: center; }
+        .hero-left-details h1 { font-size: 1.2rem; font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
+        .track-indicator-sub { font-size: 0.85rem; opacity: 0.9; margin-bottom: 12px; }
+        .cohort-indicator-sub { font-size: 0.75rem; background: rgba(255,255,255,0.2); display: inline-block; padding: 4px 10px; border-radius: 12px; margin-bottom: 16px; }
+        .hero-action-buttons { display: flex; gap: 10px; }
+        .btn-hero-white { background: white; color: #7c3aed; border: none; padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
+        .btn-hero-trans { background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
+        
+        .status-row-card { display: flex; justify-content: space-between; align-items: center; }
+        .status-left-text h3 { font-size: 0.95rem; color: #1e293b; margin-bottom: 8px; }
+        .status-pill-badge { font-size: 0.7rem; padding: 4px 10px; border-radius: 12px; font-weight: 700; }
+        .approved-pill { background: #dcfce7; color: #16a34a; }
+        .status-msg-subtext { font-size: 0.8rem; color: #64748b; margin-top: 8px; line-height: 1.4; }
+        .status-doc-graphic-icon { font-size: 2.5rem; }
+
+        .workspace-section-header { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px 0; }
+        .workspace-section-header h3 { font-size: 1rem; color: #1e293b; }
+        .btn-text-link { background: none; border: none; color: #8b5cf6; font-weight: 600; font-size: 0.8rem; cursor: pointer; }
+    </style>
+</head>
+<body class="premium-dashboard-body">
+
+    <!-- SIDE NAVIGATION DRAWER -->
+    <div class="side-drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
+    <div class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <div id="drawerAvatarBox" class="drawer-avatar-circle">ST</div>
+            <div class="drawer-user-info">
+                <h4><span id="drawerName">Loading...</span></h4>
+                <p id="drawerTrack">Student Track</p>
+            </div>
+        </div>
+        <ul class="drawer-menu-list">
+            <li class="drawer-item active" onclick="window.location.href='student-dashboard.html'">
+                <span class="material-symbols-outlined">dashboard</span> Dashboard
+            </li>
+            <li class="drawer-item" onclick="window.location.href='resources.html'">
+                <span class="material-symbols-outlined">menu_book</span> My Workspace
+            </li>
+            <li class="drawer-item" onclick="window.location.href='community.html'">
+                <span class="material-symbols-outlined">group</span> Community Feeds
+            </li>
+            <li class="drawer-item" onclick="window.location.href='profile.html'">
+                <span class="material-symbols-outlined">person</span> Edit Profile
+            </li>
+            <li class="drawer-item" onclick="window.location.href='student-message.html'">
+                <span class="material-symbols-outlined">chat</span> Message Admin
+            </li>
+            <li class="drawer-item" id="logoutBtn" style="color: #ef4444; margin-top: 16px;">
+                <span class="material-symbols-outlined">logout</span> Log Out
+            </li>
+        </ul>
+        <div class="drawer-footer">YLC Talent App v1.0</div>
+    </div>
+
+    <!-- TOP HEADER NAVIGATION -->
+    <header class="app-header">
+        <div class="header-left">
+            <button class="menu-burger-btn" onclick="toggleDrawer(true)">☰</button>
+            <div class="app-logo-area">
+                <span class="logo-circle-gradient"></span>
+                <span class="logo-text-title">YLC <span class="logo-accent">Talent</span></span>
+            </div>
+        </div>
+        <div class="header-right">
+            <div class="notification-bell-box" onclick="window.location.href='notifications.html'" style="cursor: pointer;">
+                <span class="bell-icon" style="font-size: 1.3rem;">🔔</span>
+                <span class="bell-badge-count">3</span>
+            </div>
+            <div id="topNavAvatarBox" class="mini-avatar-circle" onclick="window.location.href='profile.html'">ST</div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="mobile-scroll-container">
+        
+        <!-- Hero Card -->
+        <div class="dashboard-card premium-hero-card">
+            <div class="hero-inner-split">
+                <div class="hero-left-details">
+                    <h1>Welcome back,<br><span id="welcomeName" class="dynamic-name">Student</span> 👋</h1>
+                    <p class="track-indicator-sub" id="studentTrackDisplay">🌟 Processing Track...</p>
+                    <p class="cohort-indicator-sub">Cohort 2026</p>
+                    <div class="hero-action-buttons">
+                        <button class="btn-hero-white" onclick="window.location.href='resources.html'">📄 Resources</button>
+                        <button class="btn-hero-trans" onclick="window.location.href='profile.html'">✏️ Profile</button>
+                    </div>
+                </div>
+                <div class="hero-right-avatar">
+                    <div class="avatar-ring-container">
+                        <div id="heroAvatarBox" class="hero-avatar-circle">ST</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Card -->
+        <div class="dashboard-card status-row-card">
+            <div class="status-left-text">
+                <h3>Application Status</h3>
+                <span class="status-pill-badge approved-pill" id="statusBadge">APPROVED ✓</span>
+                <p class="status-msg-subtext" id="statusDescription">Congratulations! Your activation profile verification process completed successfully. 🎉</p>
+            </div>
+            <div class="status-right-icon-box">
+                <span class="status-doc-graphic-icon">📝</span>
+            </div>
+        </div>
+
+        <!-- Workspace Section Header -->
+        <div class="workspace-section-header">
+            <h3>Learning Workspace</h3>
+            <button class="btn-text-link" onclick="window.location.href='resources.html'">View All</button>
+        </div>
+        
+        <!-- FIX: TARGET FOR DYNAMIC WORKSPACE RESOURCES FROM FIREBASE -->
+        <div id="workspaceResourcesContainer" style="display: flex; gap: 12px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 24px; scrollbar-width: none; -webkit-overflow-scrolling: touch;">
+            <p style="text-align: center; color: #94a3b8; font-size: 0.85rem; width: 100%; padding: 15px 0;">Loading your workspace modules...</p>
+        </div>
+
+        <!-- Community Feed Section Header -->
+        <div class="workspace-section-header">
+            <h3>Community Feed</h3>
+            <button class="btn-text-link" onclick="window.location.href='community.html'">View All</button>
+        </div>
+        
+        <div id="creativeArtsFeed">
+            <p style="text-align: center; color: #94a3b8; font-size: 0.9rem; padding: 20px 0;">Loading track updates...</p>
+        </div>
+
+        <!-- Contact Admin Support Card -->
+        <div style="background: linear-gradient(135deg, #f8fafc 0%, #f3e8ff 100%); border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.05); display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <div style="background: #7c3aed; color: white; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.4rem;">
+                    <span class="material-symbols-outlined">support_agent</span>
+                </div>
+                <div>
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Need Help?</h3>
+                    <p style="font-size: 0.75rem; color: #64748b; margin: 0;">Chat with YLC Admin</p>
+                </div>
+            </div>
+            <button onclick="window.location.href='student-message.html'" style="background: #1e293b; color: white; border: none; padding: 10px 16px; border-radius: 12px; font-weight: 600; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                Message <span class="material-symbols-outlined" style="font-size: 1rem;">arrow_forward</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- BOTTOM NAVIGATION TRAY -->
+    <nav class="bottom-navigation-tray">
+        <button class="nav-tray-item active-tray" onclick="window.location.href='student-dashboard.html'">
+            <span class="material-symbols-outlined tray-icon">home</span>
+            <span class="tray-label">Home</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='resources.html'">
+            <span class="material-symbols-outlined tray-icon">menu_book</span>
+            <span class="tray-label">Resources</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='community.html'">
+            <span class="material-symbols-outlined tray-icon">group</span>
+            <span class="tray-label">Community</span>
+        </button>
+        <button class="nav-tray-item" onclick="window.location.href='profile.html'">
+            <span class="material-symbols-outlined tray-icon">person</span>
+            <span class="tray-label">Profile</span>
+        </button>
+    </nav>
+
+    <script>
+        function toggleDrawer(open) {
+            const overlay = document.getElementById('drawerOverlay');
+            const drawer = document.getElementById('sideDrawer');
+            if (open) {
+                overlay.classList.add('active');
+                drawer.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+                drawer.classList.remove('active');
+            }
+        }
+    </script>
+    <!-- CORE FIREBASE LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, query, where, orderBy, limit, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        const feedContainer = document.getElementById('creativeArtsFeed');
+        const workspaceContainer = document.getElementById('workspaceResourcesContainer');
+
+        function formatTrackName(trackKey) {
+            if(!trackKey) return "General Track";
+            return trackKey.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') + " Track";
+        }
+
+        function computeInitials(name) {
+            if(!name) return "ST";
+            return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+        }
+
+        // Auth state checking engine
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                try {
+                    const studentDocRef = doc(db, "students", user.uid);
+                    const docSnap = await getDoc(studentDocRef);
+                    
+                    if (docSnap.exists()) {
+                        const studentData = docSnap.data();
+                        
+                        // Handle naming structure differences safely
+                        const fullName = studentData.fullName || studentData.name || "Student User";
+                        const userTrackKey = studentData.track || studentData.learningTrack || "entrepreneurship";
+                        
+                        const localizedTrack = formatTrackName(userTrackKey);
+                        const userInitials = computeInitials(fullName);
+
+                        document.getElementById('welcomeName').textContent = fullName;
+                        document.getElementById('drawerName').textContent = fullName;
+                        document.getElementById('studentTrackDisplay').textContent = localizedTrack;
+                        document.getElementById('drawerTrack').textContent = localizedTrack;
+                        
+                        if (studentData.avatarUrl || studentData.profilePicUrl) {
+                            const imgUrl = studentData.avatarUrl || studentData.profilePicUrl;
+                            ['drawerAvatarBox', 'topNavAvatarBox', 'heroAvatarBox'].forEach(id => {
+                                const element = document.getElementById(id);
+                                element.style.backgroundImage = `url('${imgUrl}')`;
+                                element.textContent = ""; 
+                            });
+                        } else {
+                            document.getElementById('drawerAvatarBox').textContent = userInitials;
+                            document.getElementById('topNavAvatarBox').textContent = userInitials;
+                            document.getElementById('heroAvatarBox').textContent = userInitials;
+                        }
+                        
+                        document.getElementById('statusDescription').innerHTML = `Congratulations! You are accepted into <span style="color: #7c3aed; font-weight: 600;">${localizedTrack}.</span> 🎉`;
+
+                        // Run backend listeners 
+                        initializeWorkspaceEngine(userTrackKey);
+                        initializeLiveFeed(userTrackKey);
+                    }
+                } catch (error) {
+                    console.error("Error pulling profile data:", error);
+                }
+            } else {
+                window.location.href = "index.html";
+            }
+        });
+
+        // FIX: LIVE ENGINE FOR WORKSPACE TRACK CARDS (Fetches real data dynamically)
+        function initializeWorkspaceEngine(trackKey) {
+            const workspaceQuery = query(
+                collection(db, "track_resources"),
+                where("track", "==", trackKey),
+                limit(5)
+            );
+
+            onSnapshot(workspaceQuery, (snapshot) => {
+                workspaceContainer.innerHTML = "";
+
+                if (snapshot.empty) {
+                    workspaceContainer.innerHTML = `
+                        <div style="width: 100%; text-align: center; background: #ffffff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 16px; color: #94a3b8; font-size: 0.85rem;">
+                            No specific modules uploaded for this track yet.
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const res = doc.data();
+                    const resId = doc.id; // Explicitly get document ID string
+                    
+                    // Choose graphic emoji placeholder contextually
+                    let iconEmoji = "📄";
+                    let bgPalette = "#e2e8f0";
+                    if (res.category === 'video') { iconEmoji = "💻"; bgPalette = "#dbeafe"; }
+                    else if (res.category === 'template') { iconEmoji = "🚀"; bgPalette = "#fef3c7"; }
+                    else if (trackKey.includes('entrepreneur')) { iconEmoji = "📈"; bgPalette = "#dcfce7"; }
+
+                    const card = document.createElement('div');
+                    card.style = "min-width: 140px; max-width: 140px; background: #ffffff; border: 1px solid #f1f5f9; border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03);";
+                    card.innerHTML = `
+                        <div style="background: ${bgPalette}; width: 100%; height: 70px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 2rem; margin-bottom: 12px;">${iconEmoji}</div>
+                        <h4 style="font-size: 0.8rem; font-weight: 600; margin: 0 0 12px 0; text-align: center; color: #1e293b; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 2.4rem; line-height: 1.2;">${res.title}</h4>
+                        <!-- FIX: Passes the correct database ID parameter right here -->
+                        <button onclick="window.location.href='resource-detail.html?id=${resId}'" style="width: 100%; padding: 6px; background: transparent; border: 1px solid #e2e8f0; border-radius: 8px; color: #7c3aed; font-weight: 600; font-size: 0.8rem; cursor: pointer;">View</button>
+                    `;
+                    workspaceContainer.appendChild(card);
+                });
+            });
+        }
+
+        // Real-Time Feed Engine
+        function initializeLiveFeed(trackKey) {
+            const feedQuery = query(
+                collection(db, "track_feeds"), 
+                where("track", "==", trackKey),
+                orderBy("timestamp", "desc")
+            );
+
+            onSnapshot(feedQuery, (snapshot) => {
+                feedContainer.innerHTML = ""; 
+
+                if (snapshot.empty) {
+                    feedContainer.innerHTML = `
+                        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 20px; text-align: center; color: #94a3b8; width:100%;">
+                            <p style="font-size: 0.85rem;">No track announcements from admin yet.</p>
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach((doc) => {
+                    const post = doc.data();
+                    const postCard = document.createElement('div');
+                    postCard.style = "background: white; border: 1px solid #f1f5f9; padding: 16px; border-radius: 20px; margin-bottom: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.01); width:100%;";
+                    postCard.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.75rem; background: #f3e8ff; color: #7c3aed; padding: 4px 10px; border-radius: 20px; font-weight: 600;">Admin Update</span>
+                            <span style="font-size: 0.7rem; color: #94a3b8;">${post.timestamp ? new Date(post.timestamp.toDate()).toLocaleDateString() : 'Just now'}</span>
+                        </div>
+                        <h4 style="font-size: 0.95rem; font-weight: 600; color: #1e293b; margin-bottom: 4px;">${post.title || 'Notification'}</h4>
+                        <p style="font-size: 0.85rem; color: #475569; line-height: 1.5;">${post.content || ''}</p>
+                    `;
+                    feedContainer.appendChild(postCard);
+                });
+            });
+        }
+
+        // Handle Logout
+        document.getElementById('logoutBtn').onclick = () => {
+            signOut(auth).then(() => {
+                window.location.href = "index.html";
+            }).catch((error) => console.error("Logout error: ", error));
+        };
+    </script>
+</body>
+</html>

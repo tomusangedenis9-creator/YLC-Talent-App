@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Add New Resource</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
+        
+        /* Top Navigation */
+        .top-nav { position: sticky; top: 0; left: 0; width: 100%; display: flex; align-items: center; padding: 16px 20px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid #f1f5f9; }
+        .back-btn { background: none; border: none; color: #1e293b; display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 16px; font-size: 1.2rem; }
+        .nav-title { font-size: 1.1rem; font-weight: 600; }
+
+        .content-wrapper { padding: 20px; }
+
+        /* Form Styles */
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: #475569; margin-bottom: 8px; }
+        
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 14px 16px;
+            border-radius: 16px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+        }
+        
+        .form-textarea { resize: vertical; min-height: 100px; }
+
+        /* Upload Area */
+        .upload-area {
+            background: #f8fafc;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 32px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+        .upload-area:hover, .upload-area:active {
+            border-color: #7c3aed;
+            background: #f3e8ff;
+        }
+        .upload-area.has-file {
+            border-color: #10b981;
+            background: #d1fae5;
+        }
+        .upload-icon {
+            font-size: 2.5rem;
+            color: #7c3aed;
+            margin-bottom: 12px;
+        }
+        .upload-area.has-file .upload-icon { color: #10b981; }
+        .upload-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 4px;
+        }
+        .upload-subtext {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* External Link Option */
+        .link-input-wrapper { display: none; margin-top: 12px; }
+        .link-input-wrapper.active { display: block; }
+
+        /* Action Button */
+        .btn-submit {
+            width: 100%;
+            background: #7c3aed;
+            color: white;
+            border: none;
+            padding: 16px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 600;
+            margin-top: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.25);
+            transition: background 0.3s ease;
+        }
+        .btn-submit:active { transform: scale(0.98); }
+        .btn-submit:disabled { background: #94a3b8; cursor: not-allowed; box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <button class="back-btn" onclick="window.history.back()">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        </button>
+        <div class="nav-title">Add Resource</div>
+    </nav>
+
+    <div class="content-wrapper">
+        
+        <div class="form-group">
+            <label class="form-label">Resource Title</label>
+            <input type="text" id="resTitle" class="form-input" placeholder="e.g., Intro to Digital Illustration">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Target Track</label>
+            <select id="resTrack" class="form-select">
+                <option value="creative-arts">Creative Arts</option>
+                <option value="digital-skills">Digital Skills</option>
+                <option value="leadership">Leadership</option>
+                <option value="entrepreneurship">Entrepreneurship</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Resource Type</label>
+            <select id="resType" class="form-select" onchange="toggleInputType()">
+                <option value="pdf">PDF Document</option>
+                <option value="video">Video Tutorial</option>
+                <option value="image">Image / Graphic Pack</option>
+                <option value="template">External Link / Template</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Description / Subtitle</label>
+            <textarea id="resDesc" class="form-textarea" placeholder="e.g., Module 1 Guidebook - 2.4 MB"></textarea>
+        </div>
+
+        <div class="form-group" id="fileUploadContainer">
+            <label class="form-label">Upload File Attachment</label>
+            <div class="upload-area" id="uploadDropzone" onclick="document.getElementById('fileInput').click()">
+                <span class="material-symbols-outlined upload-icon" id="uploadIcon">cloud_upload</span>
+                <p class="upload-text" id="uploadMainText">Tap to browse files</p>
+                <p class="upload-subtext" id="uploadSubText">Supports PDF, MP4, PNG, JPG (Max 50MB)</p>
+                <input type="file" id="fileInput" style="display: none;" onchange="handleFileSelect(event)">
+            </div>
+        </div>
+
+        <div class="form-group link-input-wrapper" id="externalLinkContainer">
+            <label class="form-label">External Resource Link</label>
+            <input type="url" id="externalUrl" class="form-input" placeholder="https://www.figma.com/file/...">
+        </div>
+
+        <button class="btn-submit" id="submitBtn">
+            <span class="material-symbols-outlined" id="btnIcon">publish</span> 
+            <span id="btnText">Publish Resource</span>
+        </button>
+
+    </div>
+
+    <!-- UI INTERACTION SCRIPT -->
+    <script>
+        function toggleInputType() {
+            const type = document.getElementById('resType').value;
+            const fileUpload = document.getElementById('fileUploadContainer');
+            const externalLink = document.getElementById('externalLinkContainer');
+
+            if (type === 'template') {
+                fileUpload.style.display = 'none';
+                externalLink.classList.add('active');
+            } else {
+                fileUpload.style.display = 'block';
+                externalLink.classList.remove('active');
+            }
+        }
+
+        let selectedFile = null;
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const dropzone = document.getElementById('uploadDropzone');
+                dropzone.classList.add('has-file');
+                document.getElementById('uploadIcon').textContent = 'check_circle';
+                document.getElementById('uploadMainText').textContent = file.name;
+                document.getElementById('uploadSubText').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB ready for upload';
+            }
+        }
+    </script>
+
+    <!-- FIREBASE BACKEND INTEGRATION -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const submitBtn = document.getElementById('submitBtn');
+
+        submitBtn.addEventListener('click', async () => {
+            const title = document.getElementById('resTitle').value.trim();
+            const track = document.getElementById('resTrack').value;
+            const type = document.getElementById('resType').value;
+            const desc = document.getElementById('resDesc').value.trim();
+            const externalUrl = document.getElementById('externalUrl').value.trim();
+
+            if (!title) {
+                alert("Please enter a resource title.");
+                return;
+            }
+
+            // Manage button loading state
+            submitBtn.disabled = true;
+            document.getElementById('btnIcon').textContent = 'sync';
+            document.getElementById('btnText').textContent = 'Uploading...';
+
+            try {
+                let finalUrl = "";
+
+                if (type === 'template') {
+                    if (!externalUrl) throw new Error("Please provide an external link.");
+                    finalUrl = externalUrl;
+                } else {
+                    if (!selectedFile) throw new Error("Please select a file to upload.");
+                    
+                    // Upload to Firebase Storage
+                    const storageRef = ref(storage, `resources/${track}/${Date.now()}_${selectedFile.name}`);
+                    const uploadTask = await uploadBytesResumable(storageRef, selectedFile);
+                    
+                    // Get the public download URL
+                    finalUrl = await getDownloadURL(uploadTask.ref);
+                }
+
+                // Save data to Firestore (which instantly updates the Student Resources page)
+                await addDoc(collection(db, "track_resources"), {
+                    title: title,
+                    subtitle: desc,
+                    category: type,
+                    track: track,
+                    linkUrl: finalUrl,
+                    timestamp: serverTimestamp()
+                });
+
+                alert("Resource successfully published to the " + document.getElementById('resTrack').options[document.getElementById('resTrack').selectedIndex].text + " track!");
+                window.history.back(); // Send admin back after success
+
+            } catch (error) {
+                console.error("Upload Error:", error);
+                alert("Error saving resource: " + error.message);
+                
+                submitBtn.disabled = false;
+                document.getElementById('btnIcon').textContent = 'publish';
+                document.getElementById('btnText').textContent = 'Publish Resource';
+            }
+        });
+    </script>
+<script>
+    // Get the track from the URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const trackId = urlParams.get('track');
+    
+    // Example: If you are on the announce page, set the hidden field 
+    // or title based on the trackId
+    if (trackId) {
+        console.log("Operating on track: " + trackId);
+        // If you have a title on the page, update it:
+        // document.getElementById('pageTitle').innerText = "Announce to " + trackId;
+    }
+</script>
+
+</body>
+</html>

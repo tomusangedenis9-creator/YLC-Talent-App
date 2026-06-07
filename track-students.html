@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Track Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; color: #1e293b; padding-bottom: 100px; }
+        
+        .top-nav { position: sticky; top: 0; left: 0; width: 100%; display: flex; align-items: center; padding: 16px 20px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); z-index: 100; border-bottom: 1px solid #f1f5f9; }
+        .back-btn { background: none; border: none; color: #1e293b; display: flex; align-items: center; cursor: pointer; margin-right: 16px; font-size: 1.2rem; }
+        .nav-title { font-size: 1.1rem; font-weight: 600; }
+        
+        .content-wrapper { padding: 20px; }
+
+        #trackHeader { background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%); border-radius: 24px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 24px; position: relative; overflow: hidden; }
+        #trackHeader h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        #trackHeader p { font-size: 0.85rem; font-weight: 500; }
+        .bg-icon { position: absolute; right: -10px; bottom: -20px; font-size: 6rem; opacity: 0.2; }
+
+        .action-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 24px; }
+        .action-card { background: white; border: 1px solid #f1f5f9; padding: 16px 8px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; text-align: center; font-size: 0.75rem; font-weight: 600; color: #475569; box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer; border: none; }
+        .action-card .material-symbols-outlined { color: #7c3aed; margin-bottom: 8px; font-size: 1.5rem; }
+
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .student-list { background: #ffffff; border-radius: 20px; border: 1px solid #f1f5f9; overflow: hidden; }
+        .student-item { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid #f1f5f9; }
+        .student-avatar { width: 42px; height: 42px; border-radius: 50%; background: #f3e8ff; object-fit: cover; }
+        .student-details h4 { font-size: 0.9rem; font-weight: 600; }
+        .student-details p { font-size: 0.75rem; color: #64748b; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <button class="back-btn" onclick="window.location.href='admin-dashboard.html'">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        </button>
+        <div class="nav-title" id="navTitle">Loading...</div>
+    </nav>
+
+    <div class="content-wrapper">
+        <div id="trackHeader">
+            <h2 id="trackName">Loading...</h2>
+            <p id="studentCount">0 Students Enrolled</p>
+            <div class="bg-icon" id="trackEmoji"></div>
+        </div>
+
+        <div class="action-cards-grid">
+            <button class="action-card" onclick="window.location.href='admin-add-resource.html?track=' + trackId">
+                <span class="material-symbols-outlined">upload_file</span>Resource
+            </button>
+            <button class="action-card" onclick="window.location.href='admin-announce.html?track=' + trackId">
+                <span class="material-symbols-outlined">campaign</span>Announce
+            </button>
+            <button class="action-card" onclick="window.location.href='admin-export-list.html?track=' + trackId">
+                <span class="material-symbols-outlined">download</span>Export
+            </button>
+        </div>
+
+        <div class="section-header"><h3>Enrolled Students</h3></div>
+        <div class="student-list" id="studentList">
+            <p style="padding: 20px; text-align: center;">Loading students...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Define trackId globally so the HTML buttons can see it
+        const urlParams = new URLSearchParams(window.location.search);
+        window.trackId = urlParams.get('track'); 
+
+        const trackConfig = {
+            'creative-arts': { name: 'Creative Arts', color: 'linear-gradient(135deg, #ffedd5 0%, #fbbf24 100%)', emoji: '🎨' },
+            'digital-skills': { name: 'Digital Skills', color: 'linear-gradient(135deg, #dbeafe 0%, #60a5fa 100%)', emoji: '💻' },
+            'leadership': { name: 'Leadership', color: 'linear-gradient(135deg, #fce7f3 0%, #f472b6 100%)', emoji: '🎯' },
+            'entrepreneurship': { name: 'Entrepreneurship', color: 'linear-gradient(135deg, #dcfce7 0%, #4ade80 100%)', emoji: '🚀' }
+        };
+
+        const config = trackConfig[window.trackId] || trackConfig['creative-arts'];
+
+        document.getElementById('trackHeader').style.background = config.color;
+        document.getElementById('trackName').innerText = config.name;
+        document.getElementById('trackEmoji').innerText = config.emoji;
+        document.getElementById('navTitle').innerText = config.name + " Management";
+
+        // Fetch students for this track
+        async function fetchStudents() {
+            const listEl = document.getElementById('studentList');
+            const q = query(collection(db, "users"), where("track", "==", window.trackId));
+            const snapshot = await getDocs(q);
+            
+            listEl.innerHTML = "";
+            document.getElementById('studentCount').innerText = snapshot.size + " Students Enrolled";
+
+            snapshot.forEach(doc => {
+                const s = doc.data();
+                listEl.innerHTML += `
+                    <div class="student-item">
+                        <div class="student-info" style="display:flex; align-items:center; gap:12px;">
+                            <img src="https://ui-avatars.com/api/?name=${s.name}&background=f3e8ff&color=7c3aed" class="student-avatar">
+                            <div class="student-details">
+                                <h4>${s.name}</h4>
+                                <p>${s.email}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        fetchStudents();
+    </script>
+</body>
+</html>

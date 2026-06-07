@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Student Roster Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; color: #1e293b; padding-bottom: 110px; }
+        
+        /* Persistent Search & Filter Sticky Header Header */
+        .sticky-header {
+            position: sticky; top: 0; left: 0; width: 100%;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0; z-index: 100;
+            padding: 16px 20px; display: flex; flex-direction: column; gap: 14px;
+        }
+        .header-title-bar { display: flex; justify-content: space-between; align-items: center; }
+        .header-title-bar h2 { font-size: 1.2rem; font-weight: 700; color: #0f172a; }
+        .counter-badge { background: #f1f5f9; color: #475569; font-size: 0.75rem; font-weight: 700; padding: 4px 10px; border-radius: 20px; border: 1px solid #e2e8f0; }
+
+        /* Modern Search Input Container Group */
+        .search-container { position: relative; display: flex; align-items: center; }
+        .search-icon { position: absolute; left: 16px; color: #94a3b8; font-size: 1.3rem; }
+        .search-input {
+            width: 100%; background: #f1f5f9; border: 1px solid transparent;
+            padding: 12px 16px 12px 46px; border-radius: 16px; font-size: 0.88rem;
+            color: #0f172a; outline: none; transition: all 0.2s ease;
+        }
+        .search-input:focus { background: white; border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1); }
+
+        /* Horizontal Fast Filtering Row Track Selectors */
+        .filter-scroll-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; scrollbar-width: none; }
+        .filter-scroll-row::-webkit-scrollbar { display: none; }
+        .filter-pill {
+            background: #f1f5f9; color: #64748b; font-size: 0.78rem; font-weight: 600;
+            padding: 8px 16px; border-radius: 20px; white-space: nowrap; cursor: pointer;
+            transition: all 0.2s ease; border: 1px solid transparent;
+        }
+        .filter-pill.active { background: #1e293b; color: white; border-color: #1e293b; }
+
+        /* Student Listing Content Shell */
+        .content-wrapper { padding: 20px; }
+        .student-roster-list { display: flex; flex-direction: column; gap: 10px; }
+        
+        .student-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 18px;
+            padding: 14px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.01); transition: transform 0.15s;
+        }
+        .student-card:active { transform: scale(0.98); }
+        
+        .student-profile-core { display: flex; align-items: center; gap: 12px; }
+        .avatar-frame { position: relative; width: 44px; height: 44px; }
+        .avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        .track-indicator-dot {
+            position: absolute; bottom: -1px; right: -1px;
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 2px solid white; display: flex; align-items: center; justify-content: center;
+            font-size: 8px; color: white; font-weight: bold;
+        }
+
+        .student-meta-data h4 { font-size: 0.88rem; font-weight: 600; color: #0f172a; margin-bottom: 2px; }
+        .tag-row { display: flex; gap: 6px; align-items: center; }
+        .track-text-tag { font-size: 0.7rem; font-weight: 600; }
+        .join-date-lbl { font-size: 0.7rem; color: #94a3b8; }
+
+        .action-trigger-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; display: flex; }
+
+        /* Bottom Admin Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #ffffff;
+            display: flex; justify-content: space-around; padding: 12px 10px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05); border-top: 1px solid #f1f5f9; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #94a3b8; background: none; border: none; cursor: pointer; font-family: inherit; }
+        .nav-item.active { color: #1e293b; }
+        .nav-item .material-symbols-outlined { font-size: 1.5rem; }
+        .nav-label { font-size: 0.7rem; font-weight: 500; }
+
+        /* Dynamic Options Panel Tray Bottom Sheets */
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.4); opacity: 0; pointer-events: none; transition: 0.3s; z-index: 998; }
+        .overlay.active { opacity: 1; pointer-events: auto; }
+        .bottom-sheet { position: fixed; bottom: -100%; left:0; width:100%; background: white; border-radius: 24px 24px 0 0; padding: 20px; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 999; }
+        .bottom-sheet.active { bottom: 0; }
+        .sheet-item { display: flex; align-items: center; gap: 16px; padding: 16px; font-weight: 500; cursor: pointer; border-radius: 12px; transition: background 0.2s; color: #334155; }
+        .sheet-item:active { background: #f1f5f9; }
+        .sheet-item.danger { color: #ef4444; }
+        .sheet-item.danger .material-symbols-outlined { color: #ef4444; }
+    </style>
+</head>
+<body>
+
+    <div class="sticky-header">
+        <div class="header-title-bar">
+            <h2>Student Roster</h2>
+            <div class="counter-badge" id="rosterCount">0 Members</div>
+        </div>
+
+        <div class="search-container">
+            <span class="material-symbols-outlined search-icon">search</span>
+            <input type="text" id="searchInput" class="search-input" placeholder="Search student names...">
+        </div>
+
+        <div class="filter-scroll-row">
+            <div class="filter-pill active" data-filter="all" onclick="switchFilter(this, 'all')">All Cohorts</div>
+            <div class="filter-pill" data-filter="creative-arts" onclick="switchFilter(this, 'creative-arts')">Creative Arts</div>
+            <div class="filter-pill" data-filter="digital-skills" onclick="switchFilter(this, 'digital-skills')">Digital Skills</div>
+            <div class="filter-pill" data-filter="leadership" onclick="switchFilter(this, 'leadership')">Leadership</div>
+            <div class="filter-pill" data-filter="entrepreneurship" onclick="switchFilter(this, 'entrepreneurship')">Entrepreneurship</div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="student-roster-list" id="studentsContainer">
+            <p style="text-align: center; color: #94a3b8; padding: 40px 0; font-size: 0.9rem;">Connecting to database cluster...</p>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="window.location.href='admin-dashboard.html'">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="nav-label">Panel</span>
+        </button>
+        <button class="nav-item active" onclick="window.location.href='admin-students-list.html'">
+            <span class="material-symbols-outlined">group</span>
+            <span class="nav-label">Students</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-feeds-hub.html'">
+            <span class="material-symbols-outlined">dynamic_feed</span>
+            <span class="nav-label">Feeds</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-settings.html'">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </nav>
+
+    <div class="overlay" id="globalOverlay" onclick="closeStudentMenu()"></div>
+    <div class="bottom-sheet" id="studentOptionsSheet">
+        <div style="font-size: 0.75rem; font-weight: 700; color: #94a3b8; margin-bottom: 12px; text-transform: uppercase; padding-left: 16px;" id="sheetTargetName">Student Actions</div>
+        
+        <div class="sheet-item" id="viewProfileBtn">
+            <span class="material-symbols-outlined">person</span> View Profile
+        </div>
+        
+        <div class="sheet-item" id="directMessageBtn">
+            <span class="material-symbols-outlined">chat</span> Direct Message
+        </div>
+        
+        <div class="sheet-item danger" onclick="alert('Administrative deletion locked for live deployment protections!')">
+            <span class="material-symbols-outlined">no_accounts</span> Revoke Track Access
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let cachedStudentsArray = [];
+        let currentActiveFilter = 'all';
+
+        const trackStyleConfigs = {
+            'creative-arts': { label: 'Creative Arts', color: '#ea580c', bg: '#ffedd5', emoji: '🎨' },
+            'digital-skills': { label: 'Digital Skills', color: '#2563eb', bg: '#dbeafe', emoji: '💻' },
+            'leadership': { label: 'Leadership', color: '#db2777', bg: '#fce7f3', emoji: '🎯' },
+            'entrepreneurship': { label: 'Entrepreneurship', color: '#16a34a', bg: '#dcfce3', emoji: '🚀' }
+        };
+
+        const studentsContainer = document.getElementById('studentsContainer');
+        const rosterCountBadge = document.getElementById('rosterCount');
+        const searchField = document.getElementById('searchInput');
+
+        onSnapshot(collection(db, "students"), (snapshot) => {
+            cachedStudentsArray = [];
+            
+            snapshot.forEach((doc) => {
+                cachedStudentsArray.push({ id: doc.id, ...doc.data() });
+            });
+
+            executeUIRenderer();
+        }, (error) => {
+            console.error("Firestore database reading error: ", error);
+            studentsContainer.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 20px;">Database Error: Permissions Denied</p>`;
+        });
+
+        function executeUIRenderer() {
+            const searchKeyword = searchField.value.trim().toLowerCase();
+            
+            let compiledList = cachedStudentsArray.filter(student => {
+                // Now safely checking both 'track' and 'learningTrack' for the filter match
+                const studentTrack = student.track || student.learningTrack || 'digital-skills';
+                const matchFilter = (currentActiveFilter === 'all' || studentTrack === currentActiveFilter);
+                
+                // Now safely checking both 'name' and 'fullName' for the search function
+                const targetName = (student.name || student.fullName || "").toLowerCase();
+                const matchSearch = targetName.includes(searchKeyword);
+                
+                return matchFilter && matchSearch;
+            });
+
+            rosterCountBadge.textContent = `${compiledList.length} ${compiledList.length === 1 ? 'Member' : 'Members'}`;
+            studentsContainer.innerHTML = "";
+
+            if (compiledList.length === 0) {
+                studentsContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 40px 0; font-size: 0.9rem;">No student records found.</p>`;
+                return;
+            }
+
+            compiledList.forEach(student => {
+                // FIXED: Extracts the actual name and track from the database document
+                const studentName = student.name || student.fullName || "Unspecified Profile";
+                const trackKey = student.track || student.learningTrack || "digital-skills";
+                
+                const visualConfig = trackStyleConfigs[trackKey] || { label: trackKey, color: '#64748b', bg: '#f1f5f9', emoji: '🌟' };
+                
+                let dynamicDateLabel = "Recent Join";
+                if (student.joinedAt && typeof student.joinedAt.toDate === 'function') {
+                    const convertedDate = student.joinedAt.toDate();
+                    dynamicDateLabel = convertedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                }
+
+                const secureAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(studentName)}&background=${visualConfig.bg.replace('#','')}&color=${visualConfig.color.replace('#','')}`;
+
+                const cardNode = document.createElement('div');
+                cardNode.className = 'student-card';
+                cardNode.innerHTML = `
+                    <div class="student-profile-core">
+                        <div class="avatar-frame">
+                            <img src="${secureAvatarUrl}" class="avatar-img" alt="${studentName}">
+                            <div class="track-indicator-dot" style="background: ${visualConfig.color};">${visualConfig.emoji}</div>
+                        </div>
+                        <div class="student-meta-data">
+                            <h4>${studentName}</h4>
+                            <div class="tag-row">
+                                <span class="track-text-tag" style="color: ${visualConfig.color};">${visualConfig.label}</span>
+                                <span class="join-date-lbl">• ${dynamicDateLabel}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="action-trigger-btn" data-id="${student.id}" data-name="${studentName}" data-label="${visualConfig.label}">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                `;
+
+                cardNode.querySelector('.action-trigger-btn').addEventListener('click', function() {
+                    const id = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    const label = this.getAttribute('data-label');
+                    openStudentMenu(id, name, label);
+                });
+
+                studentsContainer.appendChild(cardNode);
+            });
+        }
+
+        window.switchFilter = function(pillElement, filterValue) {
+            document.querySelectorAll('.filter-pill').forEach(pill => pill.classList.remove('active'));
+            pillElement.classList.add('active');
+            currentActiveFilter = filterValue;
+            executeUIRenderer();
+        };
+
+        searchField.addEventListener('input', executeUIRenderer);
+    </script>
+
+    <script>
+        function openStudentMenu(id, name, track) {
+            document.getElementById('sheetTargetName').innerText = `${name} (${track})`;
+            
+            document.getElementById('viewProfileBtn').onclick = function() {
+                window.location.href = `admin-student-profile.html?uid=${id}`;
+            };
+            
+            document.getElementById('directMessageBtn').onclick = function() {
+                window.location.href = `admin-message.html?uid=${id}`; 
+            };
+
+            document.getElementById('globalOverlay').classList.add('active');
+            document.getElementById('studentOptionsSheet').classList.add('active');
+        }
+
+        function closeStudentMenu() {
+            document.getElementById('globalOverlay').classList.remove('active');
+            document.getElementById('studentOptionsSheet').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
+

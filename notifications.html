@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Notifications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; padding-top: 70px; }
+        
+        .nav-header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            display: flex; align-items: center; gap: 16px;
+            padding: 16px 20px; background: #ffffff; z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+        .back-btn {
+            background: none; border: none; font-size: 1.5rem; color: #1e293b;
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+        }
+        .nav-header h2 { font-size: 1.2rem; font-weight: 600; }
+
+        .container { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+        
+        .notification-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 16px; display: flex; gap: 14px; position: relative;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01); transition: opacity 0.3s ease;
+        }
+        .notification-card.unread { border-left: 4px solid #7c3aed; background: #fafafa; }
+        
+        .icon-box {
+            width: 40px; height: 40px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        
+        /* Dynamic Icon Colors */
+        .icon-announcement { background: #fee2e2; color: #ef4444; } /* Red */
+        .icon-system { background: #dbeafe; color: #3b82f6; } /* Blue */
+        .icon-success { background: #dcfce7; color: #22c55e; } /* Green */
+
+        .notif-body { flex: 1; padding-right: 20px; } /* Prevent text from going under the X */
+        .notif-title { font-size: 0.9rem; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+        .notif-desc { font-size: 0.8rem; color: #475569; line-height: 1.4; margin-bottom: 8px; }
+        .notif-time { font-size: 0.75rem; color: #94a3b8; font-weight: 500; }
+        
+        .dismiss-btn {
+            position: absolute; top: 12px; right: 12px; background: none; border: none;
+            color: #94a3b8; cursor: pointer; display: flex; align-items: center;
+        }
+        .dismiss-btn:active { color: #ef4444; }
+        
+        .empty-state { text-align: center; color: #94a3b8; padding: 40px 20px; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header class="nav-header">
+        <button class="back-btn" onclick="window.location.href='student-dashboard.html'">
+            <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <h2>Notifications</h2>
+    </header>
+
+    <main class="container" id="notifContainer">
+        <div class="empty-state">Loading your notifications...</div>
+    </main>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, where, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        const notifContainer = document.getElementById('notifContainer');
+        let currentUser = null;
+
+        // 1. Wait for user to be logged in
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                loadNotifications(user.uid);
+            } else {
+                notifContainer.innerHTML = `<div class="empty-state">Please log in to view notifications.</div>`;
+            }
+        });
+
+        // 2. Fetch notifications specific to this user
+        function loadNotifications(userId) {
+            // Looking in the "notifications" collection for documents matching the student's ID
+            const q = query(
+                collection(db, "notifications"), 
+                where("userId", "==", userId),
+                orderBy("createdAt", "desc")
+            );
+
+            onSnapshot(q, (snapshot) => {
+                notifContainer.innerHTML = ""; // Clear loader
+
+                if (snapshot.empty) {
+                    notifContainer.innerHTML = `
+                        <div class="empty-state">
+                            <span class="material-symbols-outlined" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 10px; display: block;">notifications_off</span>
+                            You're all caught up! No new notifications.
+                        </div>`;
+                    return;
+                }
+
+                snapshot.forEach((docSnap) => {
+                    const notif = docSnap.data();
+                    const notifId = docSnap.id;
+
+                    // Time formatting
+                    let timeString = "Just now";
+                    if (notif.createdAt && notif.createdAt.toDate) {
+                        const date = notif.createdAt.toDate();
+                        timeString = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+
+                    // Icon and color mapping based on type
+                    let iconName = "notifications";
+                    let iconClass = "icon-system";
+                    
+                    if (notif.type === "announcement") {
+                        iconName = "campaign";
+                        iconClass = "icon-announcement";
+                    } else if (notif.type === "success" || notif.type === "approved") {
+                        iconName = "check_circle";
+                        iconClass = "icon-success";
+                    } else if (notif.type === "system") {
+                        iconName = "verified";
+                        iconClass = "icon-system";
+                    }
+
+                    const unreadClass = notif.read === false ? "unread" : "";
+
+                    const card = document.createElement('div');
+                    card.className = `notification-card ${unreadClass}`;
+                    card.id = `notif-${notifId}`;
+                    
+                    card.innerHTML = `
+                        <div class="icon-box ${iconClass}"><span class="material-symbols-outlined">${iconName}</span></div>
+                        <div class="notif-body">
+                            <h4 class="notif-title">${notif.title || "Notification"}</h4>
+                            <p class="notif-desc">${notif.message || ""}</p>
+                            <span class="notif-time">${timeString}</span>
+                        </div>
+                        <button class="dismiss-btn" onclick="deleteNotification('${notifId}')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">close</span>
+                        </button>
+                    `;
+
+                    notifContainer.appendChild(card);
+                });
+            }, (error) => {
+                console.error("Error fetching notifications:", error);
+                notifContainer.innerHTML = `<div class="empty-state" style="color: #ef4444;">Could not load notifications. Check your connection.</div>`;
+            });
+        }
+
+        // 3. Delete notification from database
+        window.deleteNotification = async function(notifId) {
+            // First, visually hide it immediately for good UX
+            const cardElement = document.getElementById(`notif-${notifId}`);
+            if (cardElement) {
+                cardElement.style.opacity = '0';
+            }
+
+            try {
+                await deleteDoc(doc(db, "notifications", notifId));
+                // We don't need to manually remove the element, the onSnapshot listener will refresh the list instantly!
+            } catch (error) {
+                console.error("Error deleting notification:", error);
+                // Revert visual hide if deletion failed
+                if (cardElement) cardElement.style.opacity = '1'; 
+            }
+        };
+    </script>
+</body>
+</html>
