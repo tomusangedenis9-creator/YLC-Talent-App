@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>YLC Admin Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f8fafc;
+            color: #1e293b;
+            padding-bottom: 100px;
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: #1e293b;
+            color: white;
+            padding: 20px 20px 40px 20px;
+            border-bottom-left-radius: 30px;
+            border-bottom-right-radius: 30px;
+            box-shadow: 0 10px 20px rgba(30, 41, 59, 0.1);
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .admin-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-box {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat-number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #cbd5e1;
+            font-weight: 500;
+        }
+
+        /* Main Content */
+        .content-wrapper {
+            padding: 0 20px;
+            margin-top: -20px;
+        }
+
+        /* Primary Action Card */
+        .action-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            border: 1px solid #f1f5f9;
+            cursor: pointer;
+        }
+
+        .action-text h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #0f172a;
+            margin-bottom: 4px;
+        }
+
+        .action-text p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .btn-create {
+            background: #7c3aed;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
+            cursor: pointer;
+        }
+
+        /* Track Overview */
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #1e293b;
+        }
+
+        .track-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .track-card {
+            background: #ffffff;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .track-card:active {
+            transform: scale(0.97);
+            border-color: #cbd5e1;
+        }
+
+        .track-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+        }
+
+        .track-card h4 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 4px;
+        }
+
+        .track-card p {
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+
+        /* Bottom Admin Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: #ffffff;
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 10px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
+            border-top: 1px solid #f1f5f9;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #94a3b8;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #1e293b;
+        }
+
+        .nav-item .material-symbols-outlined {
+            font-size: 1.5rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        /* Small loading animation */
+        .pulse { animation: pulse 1.5s infinite; opacity: 0.5; }
+        @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    </style>
+</head>
+<body>
+
+    <div class="admin-header">
+        <div class="top-bar">
+            <div class="admin-title">
+                <span class="material-symbols-outlined">shield_person</span>
+                Admin Center
+            </div>
+            <button class="logout-btn" onclick="window.location.href='admin-login.html'">
+                <span class="material-symbols-outlined">logout</span>
+            </button>
+        </div>
+
+        <div class="hero-stats">
+            <div class="stat-box">
+                <div class="stat-number" id="totalStudentsStat" class="pulse">--</div>
+                <div class="stat-label">Total Students</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number">45</div> <div class="stat-label">Active Posts</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="action-card" onclick="window.location.href='admin-announce.html'">
+            <div class="action-text">
+                <h3>Update Community</h3>
+                <p>Post announcements to all tracks</p>
+            </div>
+            <button class="btn-create">
+                <span class="material-symbols-outlined">edit_square</span>
+            </button>
+        </div>
+
+        <h3 class="section-title">Cohort Overview</h3>
+        <div class="track-grid">
+            <div class="track-card" onclick="window.location.href='track-students.html?track=creative-arts'">
+                <div class="track-icon" style="background: #ffedd5; color: #ea580c;">🎨</div>
+                <h4>Creative Arts</h4>
+                <p id="ca-count" class="pulse">Loading...</p>
+            </div>
+            
+            <div class="track-card" onclick="window.location.href='track-students.html?track=digital-skills'">
+                <div class="track-icon" style="background: #dbeafe; color: #2563eb;">💻</div>
+                <h4>Digital Skills</h4>
+                <p id="ds-count" class="pulse">Loading...</p>
+            </div>
+            
+            <div class="track-card" onclick="window.location.href='track-students.html?track=leadership'">
+                <div class="track-icon" style="background: #fce7f3; color: #db2777;">🎯</div>
+                <h4>Leadership</h4>
+                <p id="ld-count" class="pulse">Loading...</p>
+            </div>
+            
+            <div class="track-card" onclick="window.location.href='track-students.html?track=entrepreneurship'">
+                <div class="track-icon" style="background: #dcfce3; color: #16a34a;">🚀</div>
+                <h4>Entrepreneurship</h4>
+                <p id="en-count" class="pulse">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="window.location.href='admin-dashboard.html'">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="nav-label">Panel</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-students-list.html'">
+            <span class="material-symbols-outlined">group</span>
+            <span class="nav-label">Students</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-feeds-hub.html'">
+            <span class="material-symbols-outlined">dynamic_feed</span>
+            <span class="nav-label">Feeds</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-settings.html'">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        async function loadDashboardStats() {
+            try {
+                // Fetch all users from your database
+                const snapshot = await getDocs(collection(db, "users"));
+                
+                let totalStudents = 0;
+                let trackCounts = {
+                    'creative-arts': 0,
+                    'digital-skills': 0,
+                    'leadership': 0,
+                    'entrepreneurship': 0
+                };
+
+                // Count the total and sort them by track
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalStudents++; 
+                    
+                    if (data.track && trackCounts[data.track] !== undefined) {
+                        trackCounts[data.track]++;
+                    }
+                });
+
+                // Remove the "pulse" animation class
+                document.querySelectorAll('.pulse').forEach(el => el.classList.remove('pulse'));
+
+                // Update the screen with real numbers
+                document.getElementById('totalStudentsStat').innerText = totalStudents;
+                document.getElementById('ca-count').innerText = trackCounts['creative-arts'] + " Enrolled";
+                document.getElementById('ds-count').innerText = trackCounts['digital-skills'] + " Enrolled";
+                document.getElementById('ld-count').innerText = trackCounts['leadership'] + " Enrolled";
+                document.getElementById('en-count').innerText = trackCounts['entrepreneurship'] + " Enrolled";
+
+            } catch(error) {
+                console.error("Error loading stats:", error);
+                // Fallback text if offline
+                document.getElementById('totalStudentsStat').innerText = "Err";
+                document.getElementById('ca-count').innerText = "Data error";
+                document.getElementById('ds-count').innerText = "Data error";
+                document.getElementById('ld-count').innerText = "Data error";
+                document.getElementById('en-count').innerText = "Data error";
+            }
+        }
+
+        // Run the stats fetcher when the page loads
+        loadDashboardStats();
+    </script>
+</body>
+</html>

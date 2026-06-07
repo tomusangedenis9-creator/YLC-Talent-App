@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Message Student - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; color: #1e293b; height: 100vh; display: flex; flex-direction: column; }
+        
+        .chat-header { background: white; padding: 16px 20px; display: flex; align-items: center; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .back-btn { background: none; border: none; font-size: 1.2rem; cursor: pointer; margin-right: 12px; display: flex; }
+        .student-info { display: flex; align-items: center; gap: 10px; }
+        .student-info img { width: 36px; height: 36px; border-radius: 50%; }
+        .student-info h4 { font-size: 0.95rem; font-weight: 600; line-height: 1.2; }
+        .student-info p { font-size: 0.7rem; color: #10b981; font-weight: 500; } 
+
+        .chat-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
+        .message { max-width: 75%; padding: 12px 16px; border-radius: 20px; font-size: 0.85rem; line-height: 1.4; position: relative; word-wrap: break-word; }
+        
+        .msg-sent { background: #7c3aed; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-sent .timestamp { font-size: 0.65rem; color: #ddd6fe; text-align: right; display: block; margin-top: 4px; }
+
+        .msg-received { background: white; color: #1e293b; align-self: flex-start; border-bottom-left-radius: 4px; border: 1px solid #f1f5f9; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
+        .msg-received .timestamp { font-size: 0.65rem; color: #94a3b8; display: block; margin-top: 4px; }
+
+        .input-area { background: white; padding: 12px 20px; padding-bottom: calc(12px + env(safe-area-inset-bottom)); border-top: 1px solid #f1f5f9; display: flex; align-items: center; gap: 10px; }
+        .msg-input { flex: 1; background: #f8fafc; border: 1px solid #e2e8f0; padding: 12px 16px; border-radius: 24px; font-size: 0.9rem; outline: none; transition: 0.2s; }
+        .msg-input:focus { border-color: #7c3aed; background: white; }
+        
+        .send-btn { background: #7c3aed; color: white; border: none; width: 44px; height: 44px; border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2); transition: transform 0.1s; }
+        .send-btn:active { transform: scale(0.95); }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <button class="back-btn" onclick="window.history.back()"><span class="material-symbols-outlined">arrow_back</span></button>
+        <div class="student-info">
+            <img src="https://ui-avatars.com/api/?name=Student&background=f3e8ff&color=7c3aed" id="studentAvatar">
+            <div>
+                <h4 id="studentName">Loading...</h4>
+                <p>Online</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-area" id="chatContainer"></div>
+
+    <div class="input-area">
+        <input type="text" id="msgInput" class="msg-input" placeholder="Type a message..." autocomplete="off">
+        <button id="sendBtn" class="send-btn"><span class="material-symbols-outlined">send</span></button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const chatContainer = document.getElementById('chatContainer');
+        const msgInput = document.getElementById('msgInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const studentNameDisplay = document.getElementById('studentName');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const currentStudentId = urlParams.get('uid') || 'test_student_001'; 
+        
+        studentNameDisplay.textContent = currentStudentId === 'test_student_001' ? "Test Student" : "Student";
+
+        function scrollToBottom() {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Listen for messages (manually sorted in JS)
+        const messagesRef = collection(db, "chats");
+        const q = query(messagesRef, where("studentId", "==", currentStudentId));
+
+        onSnapshot(q, (snapshot) => {
+            chatContainer.innerHTML = '';
+            
+            const messages = [];
+            snapshot.forEach((doc) => {
+                messages.push(doc.data());
+            });
+
+            // Local sort: puts oldest messages at the top
+            messages.sort((a, b) => {
+                const timeA = a.timestamp ? a.timestamp.toMillis() : 0;
+                const timeB = b.timestamp ? b.timestamp.toMillis() : 0;
+                return timeA - timeB;
+            });
+
+            if (messages.length === 0) {
+                chatContainer.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.85rem; margin-top:20px;">No messages yet.</div>';
+                return;
+            }
+
+            messages.forEach((msg) => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = msg.sender === "admin" ? "message msg-sent" : "message msg-received";
+
+                let timeString = msg.timestamp ? msg.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "Just now";
+
+                msgDiv.innerHTML = `${msg.text} <span class="timestamp">${timeString}</span>`;
+                chatContainer.appendChild(msgDiv);
+            });
+
+            scrollToBottom();
+        });
+
+        async function sendMessage() {
+            const text = msgInput.value.trim();
+            if (!text) return;
+
+            try {
+                await addDoc(collection(db, "chats"), {
+                    text: text,
+                    sender: "admin",
+                    studentId: currentStudentId,
+                    timestamp: serverTimestamp()
+                });
+                msgInput.value = '';
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Message failed. Did you publish the database rules?");
+            }
+        }
+
+        sendBtn.addEventListener('click', sendMessage);
+        msgInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
