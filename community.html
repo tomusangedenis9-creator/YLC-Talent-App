@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>YLC Community Feed</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet" />
     <link rel="stylesheet" href="community.css">
 </head>
@@ -40,8 +40,31 @@
         </div>
     </div>
 
-    <div id="feedContainer" style="padding-bottom: 80px;">
+    <div id="feedContainer" style="padding-bottom: 100px;">
         <p style="text-align: center; color: #94a3b8; padding: 40px 0;">Loading community posts...</p>
+    </div>
+
+    <div class="comment-drawer-overlay" id="commentDrawerOverlay" onclick="closeComments()"></div>
+    <div class="comment-drawer" id="commentDrawer">
+        <div class="drawer-header">
+            <div class="drawer-handle" onclick="closeComments()"></div>
+            <div class="drawer-title-row">
+                <h3>Comments (<span id="drawerCommentCount">0</span>)</h3>
+                <button class="icon-btn" onclick="closeComments()">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="drawer-comments-list" id="drawerCommentsList"></div>
+
+        <div class="drawer-input-box">
+            <img src="https://ui-avatars.com/api/?name=Student&background=7c3aed&color=fff" alt="User Avatar">
+            <input type="text" id="userCommentInput" placeholder="Add a nice comment...">
+            <button class="send-comment-btn" id="submitCommentBtn">
+                <span class="material-symbols-outlined">send</span>
+            </button>
+        </div>
     </div>
 
     <nav class="bottom-nav">
@@ -65,7 +88,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -85,6 +108,9 @@
         let currentFilter = 'all';
         let currentUser = null;
 
+        let commentsDatabase = {};
+        let currentActivePostId = null;
+
         const feedContainer = document.getElementById('feedContainer');
 
         const trackStyles = {
@@ -95,19 +121,21 @@
             'general': { label: 'General', icon: 'campaign', color: '#475569', bg: '#f1f5f9' }
         };
 
-        // Get Logged-in User
         onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-            }
+            if (user) currentUser = user;
         });
 
-        // Pull Live Posts
         const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
         onSnapshot(q, (snapshot) => {
             cachedPosts = [];
-            snapshot.forEach((doc) => {
-                cachedPosts.push({ id: doc.id, ...doc.data() });
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                const id = docSnap.id;
+                cachedPosts.push({ id: id, ...data });
+                
+                if (!commentsDatabase[id]) {
+                    commentsDatabase[id] = [];
+                }
             });
             renderFeed();
         }, (error) => {
@@ -115,7 +143,7 @@
             feedContainer.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 20px;">Could not load feed. Check database rules.</p>`;
         });
 
-        // Render UI
+        // --- Render UI System ---
         function renderFeed() {
             feedContainer.innerHTML = "";
             const filteredPosts = cachedPosts.filter(post => currentFilter === 'all' || post.track === currentFilter);
@@ -124,6 +152,9 @@
                 feedContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 40px 0;">No posts in this track yet.</p>`;
                 return;
             }
+
+            // [FIXED LOGIC]: Get liked archive ONCE per render for performance
+            const likedPostsArchive = JSON.parse(localStorage.getItem('ylc_liked_posts')) || [];
 
             filteredPosts.forEach(post => {
                 const trackKey = post.track || 'general';
@@ -135,8 +166,21 @@
                     timeString = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                 }
 
-                // Title check
-                const titleHtml = post.title ? `<h3 style="font-size: 1rem; color: #0f172a; margin-bottom: 6px;">${post.title}</h3>` : "";
+                const titleHtml = post.title ? `<h3 style="font-size: 1rem; color: #0f172a; margin-bottom: 6px; font-weight:600;">${post.title}</h3>` : "";
+
+                let mediaHtml = "";
+                if (post.attachmentUrl) {
+                    if (post.attachmentType === "image") {
+                        mediaHtml = `<div class="post-media-box"><img src="${post.attachmentUrl}" alt="Media Resource"></div>`;
+                    } else if (post.attachmentType === "video") {
+                        mediaHtml = `<div class="post-media-box"><video src="${post.attachmentUrl}" controls playsinline></video></div>`;
+                    }
+                }
+
+                const commentsCount = commentsDatabase[post.id] ? commentsDatabase[post.id].length : (post.commentsCount || 0);
+
+                // [FIXED LOGIC]: Determine active state inside the loop per post
+                const activeLikeClass = likedPostsArchive.includes(post.id) ? "liked" : "";
 
                 const postCard = document.createElement('div');
                 postCard.className = 'feed-card';
@@ -146,10 +190,10 @@
                     <div class="card-header">
                         <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(post.authorName || 'User')}&background=${style.bg.replace('#','')}&color=${style.color.replace('#','')}" class="card-avatar" alt="Avatar">
                         <div class="card-meta">
-                            <h4>${post.authorName || 'Unknown User'}</h4>
+                            <h4>${post.authorName || 'YLC Administration'}</h4>
                             <p>${timeString}</p>
                         </div>
-                        <div class="track-badge">
+                        <div class="track-badge" style="background: ${style.bg}; color: ${style.color};">
                             <span class="material-symbols-outlined">${style.icon}</span>
                             ${style.label}
                         </div>
@@ -159,12 +203,25 @@
                         ${titleHtml}
                         ${post.text || ''}
                     </div>
+
+                    ${mediaHtml}
+
+                    <div class="post-actions">
+                        <button class="action-btn ${activeLikeClass}" onclick="toggleLike(this, '${post.id}')">
+                            <span class="material-symbols-outlined">favorite</span>
+                            <span class="like-count">${post.likes || 0}</span> Likes
+                        </button>
+                        <button class="action-btn" onclick="openComments('${post.id}')">
+                            <span class="material-symbols-outlined">chat_bubble_outline</span>
+                            <span class="comment-count-badge">${commentsCount}</span> Comments
+                        </button>
+                    </div>
                 `;
                 feedContainer.appendChild(postCard);
             });
         }
 
-        // --- GLOBAL FUNCTIONS ---
+        // --- GLOBAL REGISTERED CONTROLLERS ---
 
         window.filterFeed = function(track) {
             currentFilter = track;
@@ -177,6 +234,128 @@
             renderFeed();
         };
 
+        // --- [ANTISPAM & STICKY LIKE SYSTEM] ---
+        window.toggleLike = async function(btn, postId) {
+            const countSpan = btn.querySelector('.like-count');
+            
+            // Get current device liked archive
+            let likedPosts = JSON.parse(localStorage.getItem('ylc_liked_posts')) || [];
+            let hasLiked = likedPosts.includes(postId);
+            
+            let currentLikes = parseInt(countSpan.innerText);
+
+            if (hasLiked) {
+                // UNLIKE ACTION
+                // Update local storage tracking list
+                likedPosts = likedPosts.filter(id => id !== postId);
+                localStorage.setItem('ylc_liked_posts', JSON.stringify(likedPosts));
+                
+                // Instant UI revert
+                btn.classList.remove('liked');
+                countSpan.innerText = Math.max(0, currentLikes - 1);
+
+                // Sync background database negatively
+                try {
+                    const postRef = doc(db, "posts", postId);
+                    await updateDoc(postRef, { likes: increment(-1) });
+                } catch (e) {
+                    console.error("Unlike tracking fault: ", e);
+                }
+            } else {
+                // LIKE ACTION
+                // Update local storage tracking list
+                likedPosts.push(postId);
+                localStorage.setItem('ylc_liked_posts', JSON.stringify(likedPosts));
+                
+                // Instant UI activation
+                btn.classList.add('liked');
+                countSpan.innerText = currentLikes + 1;
+
+                // Sync background database positively
+                try {
+                    const postRef = doc(db, "posts", postId);
+                    await updateDoc(postRef, { likes: increment(1) });
+                } catch (e) {
+                    console.error("Like tracking fault: ", e);
+                }
+            }
+        };
+
+        window.openComments = function(postId) {
+            currentActivePostId = postId;
+            const overlay = document.getElementById('commentDrawerOverlay');
+            const drawer = document.getElementById('commentDrawer');
+            renderDrawerComments();
+            overlay.classList.add('open');
+            drawer.classList.add('open');
+        };
+
+        window.closeComments = function() {
+            document.getElementById('commentDrawerOverlay').classList.remove('open');
+            document.getElementById('commentDrawer').classList.remove('open');
+        };
+
+        function renderDrawerComments() {
+            const commentsList = document.getElementById('drawerCommentsList');
+            const countBadge = document.getElementById('drawerCommentCount');
+            const activeComments = commentsDatabase[currentActivePostId] || [];
+            countBadge.innerText = activeComments.length;
+            commentsList.innerHTML = '';
+
+            if (activeComments.length === 0) {
+                commentsList.innerHTML = `<p style="text-align:center; color:#94a3b8; font-size:0.85rem; margin-top:40px;">Be the first to leave a comment on this notice!</p>`;
+                return;
+            }
+
+            activeComments.forEach(cmt => {
+                const itemHTML = `
+                <div class="comment-box">
+                    <img src="${cmt.avatar}" class="comment-avatar" alt="User">
+                    <div class="comment-content">
+                        <div class="comment-author">${cmt.author}</div>
+                        <div class="comment-text">${cmt.text}</div>
+                        <div class="comment-footer">
+                            <span>${cmt.time}</span>
+                            <span class="reply-btn">Reply</span>
+                        </div>
+                    </div>
+                </div>`;
+                commentsList.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        function executeAddComment() {
+            const inputField = document.getElementById('userCommentInput');
+            const text = inputField.value.trim();
+
+            if (text !== "" && currentActivePostId !== null) {
+                let displayName = "YLC Student";
+                if(currentUser && currentUser.displayName) displayName = currentUser.displayName;
+                
+                const newComment = {
+                    author: displayName,
+                    text: text,
+                    time: "Just now",
+                    avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=7c3aed&color=fff`
+                };
+
+                commentsDatabase[currentActivePostId].push(newComment);
+                renderDrawerComments();
+                
+                // Re-render feed layout to update visual counters based on localStorage states
+                renderFeed(); 
+
+                inputField.value = '';
+                inputField.blur();
+            }
+        }
+
+        document.getElementById('submitCommentBtn').addEventListener('click', executeAddComment);
+        document.getElementById('userCommentInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') executeAddComment();
+        });
+
     </script>
 </body>
 </html>
+
