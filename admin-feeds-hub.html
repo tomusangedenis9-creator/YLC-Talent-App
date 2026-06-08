@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Admin Feeds Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        /* Dark Theme Core */
+        body { background-color: #0f172a; color: #f8fafc; padding-bottom: 110px; }
+        
+        /* Sticky Top Navigation */
+        .top-nav {
+            position: sticky; top: 0; left: 0; width: 100%;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(12px);
+            border-bottom: 1px solid #1e293b; z-index: 100;
+            padding: 16px 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .nav-title { font-size: 1.2rem; font-weight: 700; color: #f8fafc; }
+        
+        .new-post-btn {
+            background: #7c3aed; color: white; border: none;
+            padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 6px; cursor: pointer;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+        }
+
+        .content-wrapper { padding: 16px 0; display: flex; flex-direction: column; gap: 16px; }
+
+        /* Dark Feed Cards */
+        .feed-card {
+            background: #1e293b; border-top: 1px solid #334155; border-bottom: 1px solid #334155;
+            padding: 20px; display: flex; flex-direction: column; gap: 14px;
+        }
+        
+        .post-header { display: flex; justify-content: space-between; align-items: flex-start; }
+        .author-info { display: flex; align-items: center; gap: 12px; }
+        .author-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            background: #7c3aed; display: flex; justify-content: center; align-items: center;
+            color: white; font-weight: bold; font-size: 1.2rem;
+        }
+        .author-meta h4 { font-size: 0.95rem; font-weight: 600; color: #f8fafc; display: flex; align-items: center; gap: 4px; }
+        .admin-badge { font-size: 1rem; color: #38bdf8; }
+        .post-time { font-size: 0.75rem; color: #94a3b8; text-transform: capitalize; }
+        
+        .post-options { background: none; border: none; color: #ef4444; cursor: pointer; display: flex; }
+
+        .post-text { font-size: 0.9rem; line-height: 1.5; color: #e2e8f0; }
+        .post-title { font-size: 1.05rem; color: #f8fafc; margin-bottom: 6px; font-weight: 600; }
+
+        /* Media Display Blocks */
+        .post-media-box {
+            width: 100%;
+            max-height: 320px;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-top: 12px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .post-media-box img, .post-media-box video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Action Row */
+        .action-row { display: flex; align-items: center; justify-content: flex-end; margin-top: 4px; padding-top: 12px; border-top: 1px solid #334155; }
+        .action-btn {
+            background: none; border: none; color: #94a3b8; font-size: 0.85rem; font-weight: 500;
+            display: flex; align-items: center; gap: 6px; cursor: default;
+        }
+        .action-btn .material-symbols-outlined { font-size: 1.3rem; }
+
+        /* Dark Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: #0f172a;
+            display: flex; justify-content: space-around; padding: 12px 10px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.3); border-top: 1px solid #1e293b; z-index: 100;
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: #64748b; background: none; border: none; cursor: pointer; }
+        .nav-item.active { color: #c084fc; }
+        .nav-item .material-symbols-outlined { font-size: 1.5rem; }
+        .nav-label { font-size: 0.7rem; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <div class="nav-title">Community Feeds</div>
+        <button class="new-post-btn" onclick="window.location.href='admin-announce.html'">
+            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Post
+        </button>
+    </div>
+
+    <div class="content-wrapper" id="feedContainer">
+        <p style="text-align: center; color: #94a3b8; padding: 40px 0;">Loading live feeds...</p>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item" onclick="window.location.href='admin-dashboard.html'">
+            <span class="material-symbols-outlined">dashboard</span>
+            <span class="nav-label">Panel</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-students-list.html'">
+            <span class="material-symbols-outlined">group</span>
+            <span class="nav-label">Students</span>
+        </button>
+        <button class="nav-item active" onclick="window.location.href='admin-feeds-hub.html'">
+            <span class="material-symbols-outlined">dynamic_feed</span>
+            <span class="nav-label">Feeds</span>
+        </button>
+        <button class="nav-item" onclick="window.location.href='admin-settings.html'">
+            <span class="material-symbols-outlined">settings</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const feedContainer = document.getElementById('feedContainer');
+
+        // Pull Live Posts
+        const q = query(collection(db, "posts"), orderBy("createdAt", "desc"));
+        
+        onSnapshot(q, (snapshot) => {
+            feedContainer.innerHTML = ""; // Clear loader
+            
+            if (snapshot.empty) {
+                feedContainer.innerHTML = `<p style="text-align: center; color: #94a3b8; padding: 40px 0;">No posts published yet.</p>`;
+                return;
+            }
+
+            snapshot.forEach((docSnap) => {
+                const post = docSnap.data();
+                const postId = docSnap.id;
+                
+                let timeString = "Recently";
+                if (post.createdAt && post.createdAt.toDate) {
+                    const date = post.createdAt.toDate();
+                    timeString = date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                }
+
+                const trackName = post.track || 'Global';
+                const authorName = post.authorName || 'System Admin';
+                const initial = authorName.charAt(0).toUpperCase();
+                
+                // Add title if it exists
+                const titleHtml = post.title ? `<div class="post-title">${post.title}</div>` : "";
+
+                // CHECK FOR STORAGE MEDIA AND GENERATE OUTPUT HTML
+                let mediaHtml = "";
+                if (post.attachmentUrl) {
+                    if (post.attachmentType === "image") {
+                        mediaHtml = `<div class="post-media-box"><img src="${post.attachmentUrl}" alt="Attachment"></div>`;
+                    } else if (post.attachmentType === "video") {
+                        mediaHtml = `<div class="post-media-box"><video src="${post.attachmentUrl}" controls></video></div>`;
+                    }
+                }
+
+                const postCard = document.createElement('div');
+                postCard.className = 'feed-card';
+                
+                postCard.innerHTML = `
+                    <div class="post-header">
+                        <div class="author-info">
+                            <div class="author-avatar">${initial}</div>
+                            <div class="author-meta">
+                                <h4>${authorName} <span class="material-symbols-outlined admin-badge">verified</span></h4>
+                                <span class="post-time">${timeString} • ${trackName.replace('-', ' ')}</span>
+                            </div>
+                        </div>
+                        <button class="post-options" onclick="deleteAdminPost('${postId}')" title="Delete Post">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>
+                    </div>
+                    
+                    <div class="post-text">
+                        ${titleHtml}
+                        ${post.text || ''}
+                    </div>
+
+                    ${mediaHtml}
+
+                    <div class="action-row">
+                        <div class="action-btn">
+                            <span class="material-symbols-outlined">visibility</span> 
+                            ${post.views || 0}
+                        </div>
+                    </div>
+                `;
+                
+                feedContainer.appendChild(postCard);
+            });
+        }, (error) => {
+            console.error("Error fetching posts:", error);
+            feedContainer.innerHTML = `<p style="text-align: center; color: #ef4444; padding: 20px;">Error loading feeds. Check connection.</p>`;
+        });
+
+        // Global Delete Function for Admin
+        window.deleteAdminPost = async function(postId) {
+            const confirmDelete = confirm("Are you sure you want to delete this post? This will remove it from the students' feed immediately.");
+            if (confirmDelete) {
+                try {
+                    await deleteDoc(doc(db, "posts", postId));
+                } catch (error) {
+                    console.error("Error deleting post:", error);
+                    alert("Failed to delete the post. Please try again.");
+                }
+            }
+        };
+    </script>
+
+</body>
+</html>
+
