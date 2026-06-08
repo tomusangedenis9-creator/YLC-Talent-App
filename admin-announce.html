@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Create Announcement</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght=300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f8fafc; color: #1e293b; padding-bottom: 40px; }
+        
+        /* Premium Top Nav Bar */
+        .top-nav { 
+            position: sticky; 
+            top: 0; 
+            width: 100%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between;
+            padding: 16px 20px; 
+            background: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #e2e8f0;
+            z-index: 100; 
+        }
+        .back-btn { background: none; border: none; color: #1e293b; display: flex; align-items: center; cursor: pointer; }
+        .nav-title { font-size: 1.05rem; font-weight: 700; color: #0f172a; }
+        .clear-btn { font-size: 0.85rem; font-weight: 600; color: #94a3b8; background: none; border: none; cursor: pointer; }
+
+        .content-wrapper { padding: 20px; display: flex; flex-direction: column; gap: 24px; }
+
+        /* Media Selector Cards Layout */
+        .media-selection-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        
+        .media-select-box {
+            background: white;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .media-select-box:active { transform: scale(0.97); }
+        .media-select-box.image-box:active { border-color: #7c3aed; background: #f3e8ff; }
+        .media-select-box.video-box:active { border-color: #06b6d4; background: #ecfeff; }
+        
+        .media-box-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.3rem; margin-bottom: 2px;
+        }
+        .image-box .media-box-icon { background: #f3e8ff; color: #7c3aed; }
+        .video-box .media-box-icon { background: #ecfeff; color: #06b6d4; }
+        
+        .media-select-box h4 { font-size: 0.8rem; font-weight: 600; color: #1e293b; }
+        .media-select-box p { font-size: 0.68rem; color: #64748b; }
+
+        /* Live Attachment Preview Component */
+        .preview-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); 
+            gap: 12px; 
+            background: white; 
+            padding: 14px; 
+            border-radius: 20px; 
+            border: 1px solid #e2e8f0;
+        }
+        .preview-item { 
+            position: relative; 
+            aspect-ratio: 1; 
+            border-radius: 14px; 
+            overflow: hidden; 
+            background: #f1f5f9; 
+        }
+        .preview-item img, .preview-item video { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        .remove-preview-btn {
+            position: absolute; top: 4px; right: 4px;
+            width: 22px; height: 22px; background: rgba(15, 23, 42, 0.75);
+            border-radius: 50%; border: none; color: white;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 0.75rem; backdrop-filter: blur(4px);
+        }
+
+        /* Form Labels & Groupings */
+        .form-group { display: flex; flex-direction: column; gap: 8px; position: relative; }
+        .form-label { font-size: 0.8rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        
+        /* Input Field Overhauls */
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-icon { position: absolute; left: 16px; color: #94a3b8; font-size: 1.25rem; }
+        
+        .form-input { 
+            width: 100%; 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            padding: 14px 16px 14px 46px; 
+            border-radius: 18px; 
+            font-size: 0.9rem; 
+            color: #0f172a;
+            outline: none; 
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
+        }
+        .form-input:focus { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15); }
+        
+        /* Textarea Content Block */
+        .form-textarea { 
+            width: 100%; 
+            height: 150px; 
+            background: #ffffff; 
+            border: 1px solid #e2e8f0; 
+            padding: 16px; 
+            border-radius: 18px; 
+            font-size: 0.9rem; 
+            color: #0f172a;
+            outline: none; 
+            resize: none; 
+            transition: all 0.2s ease;
+            line-height: 1.5;
+        }
+        .form-textarea:focus { border-color: #7c3aed; box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15); }
+
+        /* Pill Selection Row */
+        .pills-container { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+        .target-pill {
+            background: white; border: 1px solid #e2e8f0; padding: 8px 16px;
+            border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: #64748b;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .target-pill.active {
+            background: #7c3aed; color: white; border-color: #7c3aed;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+        }
+
+        /* Custom Toggle Switch Options */
+        .toggle-row-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 18px;
+            padding: 16px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .toggle-meta h4 { font-size: 0.85rem; font-weight: 600; color: #1e293b; }
+        .toggle-meta p { font-size: 0.75rem; color: #64748b; }
+        
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #cbd5e1; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #7c3aed; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Premium Gradient Broadcast Button */
+        .btn-post-broadcast { 
+            width: 100%; 
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); 
+            color: white; 
+            border: none; 
+            padding: 16px; 
+            border-radius: 18px; 
+            font-size: 0.95rem; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 10px; 
+            box-shadow: 0 6px 20px rgba(109, 40, 217, 0.3);
+            margin-top: 8px;
+        }
+        .btn-post-broadcast:active { transform: scale(0.98); opacity: 0.95; }
+        .btn-post-broadcast:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+
+    <nav class="top-nav">
+        <button class="back-btn" onclick="window.location.href='admin-dashboard.html'">
+            <span class="material-symbols-outlined">arrow_back_ios_new</span>
+        </button>
+        <div class="nav-title">Studio Announcement</div>
+        <button class="clear-btn" onclick="clearAllForm()">Reset</button>
+    </nav>
+
+    <div class="content-wrapper">
+        
+        <div class="media-selection-row">
+            <div class="media-select-box image-box" onclick="document.getElementById('imgUpload').click()">
+                <div class="media-box-icon"><span class="material-symbols-outlined">add_photo_alternate</span></div>
+                <h4>Add Photos</h4>
+                <p>PNG, JPG up to 10MB</p>
+                <input type="file" id="imgUpload" style="display: none;" accept="image/*" onchange="previewMedia(this, 'image')">
+            </div>
+
+            <div class="media-select-box video-box" onclick="document.getElementById('videoUpload').click()">
+                <div class="media-box-icon"><span class="material-symbols-outlined">video_call</span></div>
+                <h4>Add Video</h4>
+                <p>MP4 video clips</p>
+                <input type="file" id="videoUpload" style="display: none;" accept="video/*" onchange="previewMedia(this, 'video')">
+            </div>
+        </div>
+
+        <div class="form-group" id="previewGroup" style="display: none;">
+            <label class="form-label">Attached Media Tray</label>
+            <div class="preview-container" id="attachmentGrid"></div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Target Audience / Track Filter</label>
+            <div class="pills-container" id="trackPills">
+                <div class="target-pill active" data-track="general">All Cohorts</div>
+                <div class="target-pill" data-track="creative-arts">Creative Arts</div>
+                <div class="target-pill" data-track="digital-skills">Digital Skills</div>
+                <div class="target-pill" data-track="leadership">Leadership</div>
+                <div class="target-pill" data-track="entrepreneurship">Entrepreneurship</div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Broadcast Title</label>
+            <div class="input-wrapper">
+                <span class="material-symbols-outlined input-icon">campaign</span>
+                <input type="text" id="announceTitle" class="form-input" placeholder="e.g., Creative Arts Mini-Challenge Live! 🔥">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Detailed Content Announcement Message</label>
+            <textarea id="announceMsg" class="form-textarea" placeholder="Type out instructions, link guidelines, or write updates here to drop into the student feeds instantly..."></textarea>
+        </div>
+
+        <div class="toggle-row-card">
+            <div class="toggle-meta">
+                <h4>Pin to Feed Header</h4>
+                <p>Highlight as a crucial notice announcement</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="pinToggleStatus">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <button class="btn-post-broadcast" id="publishBtn">
+            <span class="material-symbols-outlined" style="font-size: 1.25rem;">publish</span> Broadcast Announcement
+        </button>
+    </div>
+
+    <!-- UI Logic Script -->
+    <script>
+        function previewMedia(input, type) {
+            const grid = document.getElementById('attachmentGrid');
+            const group = document.getElementById('previewGroup');
+            
+            // Clear prior attachments to ensure single file selection tracking matches input
+            grid.innerHTML = "";
+            
+            if (input.files && input.files[0]) {
+                group.style.display = 'flex'; 
+                
+                // Clear the opposing type input clear out duplicates
+                if (type === 'image') document.getElementById('videoUpload').value = "";
+                if (type === 'video') document.getElementById('imgUpload').value = "";
+
+                Array.from(input.files).forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const item = document.createElement('div');
+                        item.className = 'preview-item';
+                        
+                        if (type === 'image') {
+                            item.innerHTML = `<img src="${e.target.result}"><button class="remove-preview-btn" onclick="removeMedia(this, 'image')">×</button>`;
+                        } else if (type === 'video') {
+                            item.innerHTML = `<video src="${e.target.result}" muted></video><button class="remove-preview-btn" onclick="removeMedia(this, 'video')">×</button>`;
+                        }
+                        grid.appendChild(item);
+                    }
+                    reader.readAsDataURL(file);
+                });
+            }
+        }
+
+        function removeMedia(btn, type) {
+            const item = btn.parentElement;
+            item.remove();
+            
+            if (type === 'image') document.getElementById('imgUpload').value = "";
+            if (type === 'video') document.getElementById('videoUpload').value = "";
+            
+            if (document.getElementById('attachmentGrid').children.length === 0) {
+                document.getElementById('previewGroup').style.display = 'none';
+            }
+        }
+
+        function clearAllForm() {
+            document.getElementById('announceTitle').value = '';
+            document.getElementById('announceMsg').value = '';
+            document.getElementById('imgUpload').value = '';
+            document.getElementById('videoUpload').value = '';
+            document.getElementById('attachmentGrid').innerHTML = '';
+            document.getElementById('previewGroup').style.display = 'none';
+            document.getElementById('pinToggleStatus').checked = false;
+            
+            document.querySelectorAll('.target-pill').forEach(p => p.classList.remove('active'));
+            document.querySelector('.target-pill[data-track="general"]').classList.add('active');
+        }
+
+        document.querySelectorAll('.target-pill').forEach(pill => {
+            pill.addEventListener('click', function() {
+                document.querySelectorAll('.target-pill').forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    </script>
+
+    <!-- Firebase Connection Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx4apmVQDOqH1bO7XqDkCOqVk7ElcWHVA",
+            authDomain: "ylc-talent-app.firebaseapp.com",
+            projectId: "ylc-talent-app",
+            storageBucket: "ylc-talent-app.firebasestorage.app",
+            messagingSenderId: "209480215567",
+            appId: "1:209480215567:web:f04d6bf8da0355a2da877a"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const publishBtn = document.getElementById('publishBtn');
+
+        publishBtn.addEventListener('click', async () => {
+            const title = document.getElementById('announceTitle').value.trim();
+            const message = document.getElementById('announceMsg').value.trim();
+            const isPinned = document.getElementById('pinToggleStatus').checked;
+            
+            const imgInput = document.getElementById('imgUpload');
+            const videoInput = document.getElementById('videoUpload');
+            
+            const imageFile = imgInput.files[0];
+            const videoFile = videoInput.files[0];
+            
+            const activePill = document.querySelector('.target-pill.active');
+            const targetTrack = activePill ? activePill.getAttribute('data-track') : 'general';
+
+            if (!message && !title && !imageFile && !videoFile) {
+                alert("Please add a title, message, or file attachment before broadcasting.");
+                return;
+            }
+
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Uploading Media...';
+
+            let mediaUrl = "";
+            let mediaType = "none";
+
+            try {
+                // If an image was picked, upload to Firebase Storage
+                if (imageFile) {
+                    const storageRef = ref(storage, 'announcements/images/' + Date.now() + '_' + imageFile.name);
+                    const snapshot = await uploadBytes(storageRef, imageFile);
+                    mediaUrl = await getDownloadURL(snapshot.ref);
+                    mediaType = "image";
+                } 
+                // If a video was picked, upload to Firebase Storage
+                else if (videoFile) {
+                    const storageRef = ref(storage, 'announcements/videos/' + Date.now() + '_' + videoFile.name);
+                    const snapshot = await uploadBytes(storageRef, videoFile);
+                    mediaUrl = await getDownloadURL(snapshot.ref);
+                    mediaType = "video";
+                }
+
+                publishBtn.innerHTML = '<span class="material-symbols-outlined">hourglass_empty</span> Syncing Feed...';
+
+                // Send the text and the new live file download URL together straight to firestore
+                await addDoc(collection(db, "posts"), {
+                    authorName: "YLC Administration",
+                    title: title,
+                    text: message,
+                    track: targetTrack,
+                    isPinned: isPinned,
+                    attachmentUrl: mediaUrl,
+                    attachmentType: mediaType,
+                    likes: 0,
+                    commentsCount: 0,
+                    createdAt: serverTimestamp()
+                });
+
+                alert("Broadcast Successful! Syncing to student feeds.");
+                clearAllForm();
+                window.location.href = 'admin-dashboard.html';
+                
+            } catch (error) {
+                console.error("Broadcast failed: ", error);
+                alert("Failed to connect or upload your file. Please check your network context.");
+                publishBtn.disabled = false;
+                publishBtn.innerHTML = '<span class="material-symbols-outlined">publish</span> Broadcast Announcement';
+            }
+        });
+    </script>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const trackId = urlParams.get('track');
+        
+        if (trackId) {
+            window.addEventListener('DOMContentLoaded', () => {
+                const preSelectPill = document.querySelector(`.target-pill[data-track="${trackId}"]`);
+                if (preSelectPill) {
+                    document.querySelectorAll('.target-pill').forEach(p => p.classList.remove('active'));
+                    preSelectPill.classList.add('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
